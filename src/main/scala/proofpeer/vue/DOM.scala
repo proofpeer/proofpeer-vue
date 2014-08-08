@@ -4,9 +4,6 @@ object DOM {
 
   import scala.scalajs.js
 
-  object Node {
-  }
-
   class Node(private val node : js.Dynamic) {
 
     def appendChild(child : Node) {
@@ -113,17 +110,18 @@ object DOM {
 
   }
 
-  case class TextParam(text : String) extends Parameters
+  case class StringParam(value : String) extends Parameters
+
   object TEXT extends PrimitiveComponentClass {
     def name = "text"
     def render(component : Component) : DOM.Node = {
-      val param : TextParam = component.blueprint()
-      val elem = document.createTextNode(param.text)
+      val param : StringParam = component.blueprint()
+      val elem = document.createTextNode(param.value)
       mkNode(elem)
     }
     def updateBlueprint(component : Component, blueprint : Blueprint, optState : Option[Any]) {
       val node = component.mountNode
-      node.inner.nodeValue = blueprint[TextParam]().text
+      node.inner.nodeValue = blueprint[StringParam]().value
     }
   }
 
@@ -148,7 +146,7 @@ object DOM {
   private def primitiveClass(name : String) : PrimitiveComponentClass = 
     new DefaultPrimitiveComponent(name)
 
-  def text(value : String) = TEXT(TextParam(value))()
+  def text(value : String) = TEXT(StringParam(value))()
 
   val DIV = primitiveClass("div")
   val H1 = primitiveClass("h1")

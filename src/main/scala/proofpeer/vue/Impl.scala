@@ -101,6 +101,11 @@ object Impl {
   }
 
   private def runStateUpdates() {
+    // Because new state updates can be inserted into currentUpdates while
+    // runStateUpdates is running, this is not guaranteed to terminate.
+    // More practical experience is needed to see if that turns out to be a problem.
+    // The most problematic scenario seems to be when lower level components change the 
+    // state of higher-level components, so that should not happen ever if possible.
     runningStateUpdates = true
     currentUpdateTask = None
     while (!currentUpdates.isEmpty) {
@@ -306,9 +311,10 @@ object Impl {
   }
 
   def publishEvent(origin : Component, eventName : Event.Name, info : Any, performDefault : Event => Unit) {
-    //EventHandling.
+    val target = origin.mountNode.inner
+    val event = new EventHandling.SyntheticEvent(eventName, info, null)
+    EventHandling.processEvent(event, Some(performDefault), target)  
   }  
-
 
   private object EventHandling {
 
@@ -392,28 +398,39 @@ object Impl {
       }
     }
 
+    def processEvent(event : SyntheticEvent, defaultAction : Option[Event => Unit], target : js.Dynamic) {
+      val m = eventHandlers(event.eventName)
+      var hits : List[(VirtualNode, Event.Handler)] = List()
+      for ((virtualNode, handler) <- m) {
+        if (virtualNode.mountNode.inner.contains(target).asInstanceOf[Boolean]) {
+          hits = (virtualNode, handler) :: hits
+        }
+      }
+      val hitsArray = hits.toArray
+      scala.util.Sorting.quickSort(hitsArray)(handlerOrdering)
+      def handleEvent() {
+        for ((virtualNode, handler) <- hitsArray) {
+          handler.handleEvent(virtualNode, event)
+          if (!event.bubbling) {
+            if (!event.cancelled && defaultAction.isDefined) {
+              (defaultAction.get)(event)
+            }
+            return
+          }
+        }
+        if (!event.cancelled && defaultAction.isDefined) {
+          (defaultAction.get)(event)
+        }        
+      }
+      handleEvent()      
+    }
+
     val listener : js.Function1[js.Dynamic, Unit] = (nativeEvent : js.Dynamic) => {
       syntheticEvent(nativeEvent) match {
         case None => 
           println("cannot handle event type: "+nativeEvent.`type`)
         case Some(event) =>
-          val m = eventHandlers(event.eventName)
-          val target = nativeEvent.target
-          var hits : List[(VirtualNode, Event.Handler)] = List()
-          for ((virtualNode, handler) <- m) {
-            if (virtualNode.mountNode.inner.contains(target).asInstanceOf[Boolean]) {
-              hits = (virtualNode, handler) :: hits
-            }
-          }
-          val hitsArray = hits.toArray
-          scala.util.Sorting.quickSort(hitsArray)(handlerOrdering)
-          def handleEvent() {
-            for ((virtualNode, handler) <- hitsArray) {
-              handler.handleEvent(virtualNode, event)
-              if (!event.bubbling) return
-            }
-          }
-          handleEvent()
+          processEvent(event, None, nativeEvent.target)
       }
     }
 
