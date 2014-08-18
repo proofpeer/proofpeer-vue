@@ -12,15 +12,6 @@ object DOM {
 
     def countChildren : Int = node.childNodes.length.asInstanceOf[Int]
 
-    // this assumes that child is not a child of the node yet
-    def insertNewChild(child : Node, position : Int) {
-      val count = countChildren
-      if (position == count) appendChild(child)
-      else if (position >= 0 && position < count) {
-        node.insertBefore(child.node, node.childNodes.item(position))
-      } else throw new RuntimeException("invalid position for DOM.Node.insert: " + position)
-    }
-
     def insertBefore(child : Node, before : Node) {
       node.insertBefore(child.node, before.node)
     }
@@ -53,9 +44,11 @@ object DOM {
     new Node(node)
   }
 
-  private def document : js.Dynamic = js.Dynamic.global.document
+  def document : js.Dynamic = js.Dynamic.global.document
 
-  private def window : js.Dynamic = js.Dynamic.global.window
+  def window : js.Dynamic = js.Dynamic.global.window
+
+  def screen : js.Dynamic = js.Dynamic.global.screen
 
   def lookupNode(id : String) : Option[Node] = { 
     val node = document.getElementById(id)
@@ -152,5 +145,6 @@ object DOM {
   val H1 = primitiveClass("h1")
   val H2 = primitiveClass("h2")
   val FORM = primitiveClass("form")
+  val SPAN = primitiveClass("span")
 
 }

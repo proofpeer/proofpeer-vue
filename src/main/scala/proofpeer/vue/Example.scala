@@ -136,24 +136,17 @@ object Example {
     }
   }
 
-  var i = 0
-  def f() {
-    i = i + 1
-    println("hey there: "+i)
-  }
-
   @JSExport
   def run() : Unit = {
-    import proofpeer.general.algorithms.LongestNondecreasingSubsequence
-    println("proofpeer.ux.Example.run")
     RenderTarget(lookupNode("content").get).render(CommentBox()())
-    val id = DOM.setInterval(f, 2000)
-    DOM.clearInterval(id)
-    val seq = List(11, 2, 10, 17, 20, 9, 15, 7, 22, 14, 4, 8, 16, 12, 6, 21, 1, 19, 18, 13, 3, 5)
-    val longest = LongestNondecreasingSubsequence.compute(seq)
-    val longest16 = LongestNondecreasingSubsequence.compute(seq, seq.indexOf(22))
-    println("longest: " + longest)
-    println("longest16: " + longest16)
+  }
+
+  import proofpeer.vue.components._
+
+  @JSExport
+  def pagecontainer() : Unit = {
+    val elem = DIV(Attributes(AttributeName.STYLE -> "background-color:red;width:40px;height:20px"))()
+    RenderTarget(lookupNode("content").get).render(PageContainer()(elem))
   }
 
 }

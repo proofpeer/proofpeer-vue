@@ -11,6 +11,7 @@ trait Event {
 }
 
 object Event {
+
   trait Name
 
   trait Handler {
@@ -134,6 +135,7 @@ trait Component {
 trait CustomComponent extends Component {
   def setLocalState(state : Any)
   def getLocalState() : Any
+  def localState[T] : T = getLocalState.asInstanceOf[T]
 }
 
 abstract class PrimitiveComponentClass extends ComponentClass {
