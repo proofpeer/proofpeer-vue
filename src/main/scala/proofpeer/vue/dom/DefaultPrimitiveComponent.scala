@@ -7,7 +7,7 @@ class DefaultPrimitiveComponent(val name : String)
 {
 
   def render(component : Component) : dom.Node = {
-    val elem = document.createElement(name)
+    val elem = document().createElement(name)
     for ((attrName, attrValue) <- component.blueprint.attributes.toSeq) {
       val value = attrName.toString(attrValue)
       if (value != null) elem.setAttribute(attrName.name, value)
@@ -20,7 +20,7 @@ class DefaultPrimitiveComponent(val name : String)
     val oldBlueprint = component.blueprint
     val oldAttributes = oldBlueprint.attributes
     val attributes = blueprint.attributes
-    val elem = node.inner
+    val elem = node()
     val removedAttributes = oldAttributes.attributeNames -- attributes.attributeNames
     for (attrName <- removedAttributes) elem.removeAttribute(attrName.name)
     for ((attrName, attrValue) <- attributes.toSeq) {

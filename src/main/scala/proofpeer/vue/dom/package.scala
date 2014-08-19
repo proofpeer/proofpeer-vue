@@ -4,31 +4,29 @@ package object dom {
 
   import scala.scalajs.js
 
-  def document : js.Dynamic = js.Dynamic.global.document
+  def document : Node = Node.make(js.Dynamic.global.document)
 
-  def window : js.Dynamic = js.Dynamic.global.window
-
-  def screen : js.Dynamic = js.Dynamic.global.screen
+  def window : Node = Node.make(js.Dynamic.global.window)
 
   def lookupNode(id : String) : Option[Node] = { 
-    val node = document.getElementById(id)
+    val node = document().getElementById(id)
     if (node == null) None else Some(new Node(node))
   }
 
   def setInterval(f : () => Unit, millis : Int) : Int = {
-    window.setInterval(f, millis).asInstanceOf[Int]
+    window().setInterval(f, millis).asInstanceOf[Int]
   }
 
   def clearInterval(intervalId : Int) {
-    window.clearInterval(intervalId)
+    window().clearInterval(intervalId)
   }
 
   def setTimeout(f : () => Unit, millis : Int) : Int = {
-    window.setTimeout(f, millis).asInstanceOf[Int]
+    window().setTimeout(f, millis).asInstanceOf[Int]
   }
 
   def clearTimeout(intervalId : Int) {
-    window.clearTimeout(intervalId)
+    window().clearTimeout(intervalId)
   }  
 
   private def primitiveClass(name : String) : PrimitiveComponentClass = 

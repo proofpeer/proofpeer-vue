@@ -11,7 +11,7 @@ class Node(private val node : js.Dynamic) {
   def countChildren : Int = node.childNodes.length.asInstanceOf[Int]
 
   def insertBefore(child : Node, before : Node) {
-    node.insertBefore(child.node, before.node)
+    node.insertBefore(child(), before())
   }
 
   def replace(nodeToReplace : Node) {
@@ -20,23 +20,23 @@ class Node(private val node : js.Dynamic) {
   }
 
   def removeChild(child : Node) {
-    node.removeChild(child.node)
+    node.removeChild(child())
   }
 
   def contains(that : Node) : Boolean = {
-    node.contains(that.node).asInstanceOf[Boolean]
+    node.contains(that()).asInstanceOf[Boolean]
   }
 
   // returns the active element if there is one contained in this node
   def activeElement : Option[Node] = {
-    val a = document.activeElement
+    val a = document().activeElement
     if (a == null) None
     else if (node.contains(a).asInstanceOf[Boolean]) Some(Node.make(a))
     else None
   }
 
-  def inner : js.Dynamic = node
-  def make(node : js.Dynamic) : Node = new Node(node)
+  def apply() : js.Dynamic = node
+
 }
 
 object Node {

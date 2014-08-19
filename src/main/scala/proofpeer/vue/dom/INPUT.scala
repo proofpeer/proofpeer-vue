@@ -12,11 +12,11 @@ object INPUT extends DefaultPrimitiveComponent("input")
 
   override def updateState(component : Component, state : Any) {
     val s = state.asInstanceOf[String]
-    component.mountNode.inner.value = s
+    component.mountNode().value = s
   }
 
   override def getState(component : Component) : Any = {
-    val s = component.mountNode.inner.value.asInstanceOf[String]
+    val s = component.mountNode().value.asInstanceOf[String]
     s
   }
 

@@ -1,6 +1,7 @@
 package proofpeer.vue
 
 import scala.collection.immutable.SortedMap
+import dom.Node
 
 object Impl {
 
@@ -312,9 +313,8 @@ object Impl {
   }
 
   def publishEvent(origin : Component, eventName : Event.Name, info : Any, performDefault : Event => Unit) {
-    val target = origin.mountNode.inner
     val event = new EventHandling.SyntheticEvent(eventName, info, null)
-    dom.setTimeout(() => EventHandling.processEvent(event, Some(performDefault), target), 0)  
+    dom.setTimeout(() => EventHandling.processEvent(event, Some(performDefault), origin.mountNode), 0)  
   }  
 
   private object EventHandling {
@@ -399,11 +399,11 @@ object Impl {
       }
     }
 
-    def processEvent(event : SyntheticEvent, defaultAction : Option[Event => Unit], target : js.Dynamic) {
+    def processEvent(event : SyntheticEvent, defaultAction : Option[Event => Unit], target : Node) {
       val m = eventHandlers(event.eventName)
       var hits : List[(VirtualNode, Event.Handler)] = List()
       for ((virtualNode, handler) <- m) {
-        if (virtualNode.mountNode.inner.contains(target).asInstanceOf[Boolean]) {
+        if (virtualNode.mountNode.contains(target)) {
           hits = (virtualNode, handler) :: hits
         }
       }
@@ -431,7 +431,7 @@ object Impl {
         case None => 
           println("cannot handle event type: "+nativeEvent.`type`)
         case Some(event) =>
-          processEvent(event, None, nativeEvent.target)
+          processEvent(event, None, Node.make(nativeEvent.target))
       }
     }
 

@@ -8,9 +8,9 @@ case class Dimensions(width : Int, height : Int, pixelRatio : Float)
 object PageContainer extends CustomComponentClass {
 
   private def grabDimensions : Dimensions = {
-    val pageWidth = window.innerWidth.asInstanceOf[Int]
-    val pageHeight = window.innerHeight.asInstanceOf[Int]
-    val pixelRatio = window.devicePixelRatio.asInstanceOf[Float]
+    val pageWidth = window().innerWidth.asInstanceOf[Int]
+    val pageHeight = window().innerHeight.asInstanceOf[Int]
+    val pixelRatio = window().devicePixelRatio.asInstanceOf[Float]
     Dimensions(pageWidth, pageHeight, pixelRatio)
   }
 
@@ -19,7 +19,7 @@ object PageContainer extends CustomComponentClass {
     val f : () => Unit = () => {
       component.setLocalState(grabDimensions)
     }
-    window.onresize = f
+    window().onresize = f
   }
 
   override def componentWillUnmount(component : CustomComponent) {
