@@ -10,7 +10,7 @@ object Impl {
     val id = nextVirtualNodeId
     nextVirtualNodeId = nextVirtualNodeId + 1
     var blueprint : Blueprint = null
-    var mountNode : DOM.Node = null
+    var mountNode : dom.Node = null
     def willUnmount() {
       EventHandling.updateHandlers(this, blueprint.eventHandlers, Event.NoHandlers)
     }
@@ -77,7 +77,7 @@ object Impl {
     if (!runningStateUpdates) {
       currentUpdateTask match {
         case None =>
-          currentUpdateTask = Some(DOM.setTimeout(() => runStateUpdates(), 0))
+          currentUpdateTask = Some(dom.setTimeout(() => runStateUpdates(), 0))
         case _ =>
       }
     }
@@ -92,7 +92,7 @@ object Impl {
           currentUpdateTask match {
             case None =>
             case Some(id) => 
-              DOM.clearTimeout(id)
+              dom.clearTimeout(id)
               currentUpdateTask = None
           }
         }
@@ -184,8 +184,8 @@ object Impl {
     }
   }
 
-  private def updateBlueprints(activeElement : Option[DOM.Node], parentHeight : Int,
-    parentNode : DOM.Node, blueprints : Seq[Blueprint], nodes : Seq[VirtualNode]) : Seq[VirtualNode] =
+  private def updateBlueprints(activeElement : Option[dom.Node], parentHeight : Int,
+    parentNode : dom.Node, blueprints : Seq[Blueprint], nodes : Seq[VirtualNode]) : Seq[VirtualNode] =
   {
     type Key = Any
     var keyedNodes : Map[Key, (VirtualNode, Int)] = Map()
@@ -210,7 +210,7 @@ object Impl {
     var count : Int = 0
     var activeElementPosition : Option[Int] = None
     def addExisting(virtualNode : VirtualNode, i : Int, blueprint : Blueprint) {
-      val ae : Option[DOM.Node] = 
+      val ae : Option[dom.Node] = 
         activeElement match {
           case None => None
           case Some(ae) =>
@@ -262,7 +262,7 @@ object Impl {
         case Some(position) => compute(existing.reverse, count - position - 1)
       }
     for (node <- increasingNodes) node.marked = true
-    var lastNode : DOM.Node = null
+    var lastNode : dom.Node = null
     for (node <- result) {
       if (!node.marked) {
         if (lastNode == null) 
@@ -275,7 +275,7 @@ object Impl {
     return result.reverse.map(_.vnode)
   }
 
-  private def updateBlueprint(activeElement : Option[DOM.Node], 
+  private def updateBlueprint(activeElement : Option[dom.Node], 
     virtualNode : VirtualNode, blueprint : Blueprint) : VirtualNode = 
   {
     if (virtualNode.blueprint == blueprint) return virtualNode
@@ -314,7 +314,7 @@ object Impl {
   def publishEvent(origin : Component, eventName : Event.Name, info : Any, performDefault : Event => Unit) {
     val target = origin.mountNode.inner
     val event = new EventHandling.SyntheticEvent(eventName, info, null)
-    DOM.setTimeout(() => EventHandling.processEvent(event, Some(performDefault), target), 0)  
+    dom.setTimeout(() => EventHandling.processEvent(event, Some(performDefault), target), 0)  
   }  
 
   private object EventHandling {
@@ -455,7 +455,7 @@ object Impl {
 
   }
 
-  private class Target(domNode : DOM.Node) extends RenderTarget {
+  private class Target(domNode : dom.Node) extends RenderTarget {
 
     var virtualNode : VirtualNode = null
 
@@ -469,7 +469,7 @@ object Impl {
 
   }
 
-  def createRenderTarget(node : DOM.Node) : RenderTarget = {
+  def createRenderTarget(node : dom.Node) : RenderTarget = {
     return new Target(node)
   }
 

@@ -115,7 +115,7 @@ trait Component {
   def blueprint : Blueprint
   def getState[T] : T
   def setState(state : Any)
-  def mountNode : DOM.Node
+  def mountNode : dom.Node
   def subComponents : Seq[Component]
   def lookup(key : Any) : Option[Component]
   def apply(key : Any) : Component = lookup(key).get
@@ -129,7 +129,7 @@ trait CustomComponent extends Component {
 
 abstract class PrimitiveComponentClass extends ComponentClass {
   // render must depend only on the identity of the component and on component.blueprint
-  def render(component : Component) : DOM.Node
+  def render(component : Component) : dom.Node
   def updateBlueprint(component : Component, newBlueprint : Blueprint, newState : Option[Any])
   def updateState(component : Component, state : Any) {}
   def getState(component : Component) : Any = null
@@ -156,7 +156,7 @@ trait RenderTarget {
 }
 
 object RenderTarget {
-  def apply(node : DOM.Node) : RenderTarget = Impl.createRenderTarget(node)
+  def apply(node : dom.Node) : RenderTarget = Impl.createRenderTarget(node)
 }
 
 

@@ -6,7 +6,7 @@ import js.annotation.JSExport
 @JSExport("proofpeer.vue.Example")
 object Example {
 
-  import DOM._
+  import dom._
   import AttributeName._
 
   def style(s : String) : Attributes = {
@@ -52,12 +52,12 @@ object Example {
     }
 
     override def componentWillMount(component : CustomComponent) {
-      val intervalId = DOM.setInterval(() => { load(component) }, 5000)
+      val intervalId = dom.setInterval(() => { load(component) }, 5000)
       component.setState(CommentBoxState(intervalId, Datastore.load()))      
     }
 
     override def componentWillUnmount(component : CustomComponent) {
-      DOM.clearInterval(component.getState[CommentBoxState].intervalId)
+      dom.clearInterval(component.getState[CommentBoxState].intervalId)
     }
 
     def render(component : CustomComponent) : Blueprint = {
