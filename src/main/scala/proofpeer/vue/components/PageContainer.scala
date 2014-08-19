@@ -2,8 +2,7 @@ package proofpeer.vue.components
 
 import proofpeer.vue._
 import dom._
-
-case class Dimensions(width : Int, height : Int, pixelRatio : Float)
+import Layout._
 
 object PageContainer extends CustomComponentClass {
 
@@ -28,10 +27,10 @@ object PageContainer extends CustomComponentClass {
   def render(component : CustomComponent) : Blueprint = {
     val dims = component.localState[Dimensions]
     val attrs = Attributes(STYLE -> ("overflow:hidden;position:absolute;left:0px;top:0px;width:"+dims.width+"px;height:"+dims.height+"px"))
-    if (component.blueprint.children.isEmpty)
-      DIV(attrs)(text("I am a page container: " + dims))
-    else 
-      DIV(attrs)(component.blueprint.children.head)
+    ensure(component.blueprint.children.size == 1, "PageContainer expects exactly one child")
+    val child = component.blueprint.children.head
+    val bounds = Bounds(Position(0, 0), dims).toAttributes
+    DIV(bounds + (STYLE -> "overflow:hidden"))(child ++ bounds)
   }
 
 }

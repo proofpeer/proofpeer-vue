@@ -49,6 +49,18 @@ sealed case class Blueprint(
 {
   def attribute[T] : T = attributes[T]()
   def key : Option[Any] = attributes.get(KEY)
+  def ++(attrs : Attributes) : Blueprint = {
+    Blueprint(componentClass, eventHandlers, attributes ++ attrs, children)    
+  }
+  def ++(attrs : (AttributeName[Any], Any)*) : Blueprint = {
+    this ++ Attributes(attrs : _*)
+  }
+  def ++/(attrs : Attributes) : Blueprint = {
+    Blueprint(componentClass, eventHandlers, attributes ++/ attrs, children)    
+  }
+  def ++/(attrs : (AttributeName[Any], Any)*) : Blueprint = {
+    this ++/ Attributes(attrs : _*)
+  }
 }
 
 sealed abstract class ComponentClass {
@@ -158,6 +170,3 @@ trait RenderTarget {
 object RenderTarget {
   def apply(node : dom.Node) : RenderTarget = Impl.createRenderTarget(node)
 }
-
-
-

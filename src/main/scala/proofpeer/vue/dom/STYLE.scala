@@ -28,4 +28,9 @@ case object STYLE extends AttributeName[CaseInsensitiveMap[String]] {
     }
     result
   }
+  override def merge(value1 : Any, value2 : Any) : Any = {
+    val u = value1.asInstanceOf[CaseInsensitiveMap[String]]
+    val v = value2.asInstanceOf[CaseInsensitiveMap[String]]
+    u ++ v
+  }
 }
