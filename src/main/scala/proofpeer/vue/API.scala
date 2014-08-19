@@ -48,7 +48,7 @@ sealed case class Blueprint(
   children : Seq[Blueprint]) 
 {
   def attribute[T] : T = attributes[T]()
-  def key : Option[Any] = attributes.get(AttributeName.KEY)
+  def key : Option[Any] = attributes.get(KEY)
 }
 
 sealed abstract class ComponentClass {

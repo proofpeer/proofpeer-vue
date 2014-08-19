@@ -7,7 +7,6 @@ import js.annotation.JSExport
 object Example {
 
   import dom._
-  import AttributeName._
 
   def style(s : String) : Attributes = {
     Attributes(STYLE -> s)
@@ -103,7 +102,6 @@ object Example {
   case class CommentFormState(author : String, comment : String) 
   object CommentForm extends CustomComponentClass {
     def render(component : CustomComponent) : Blueprint = {
-      import AttributeName._
       FORM()(
         INPUT(KEY -> "author", TYPE -> "text", PLACEHOLDER -> "Your name")(),
         INPUT(KEY -> "comment", TYPE -> "text", PLACEHOLDER -> "Say something")(),

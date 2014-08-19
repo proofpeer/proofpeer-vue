@@ -13,5 +13,5 @@ object TEXT extends PrimitiveComponentClass {
     val node = component.mountNode
     node.inner.nodeValue = blueprint.attribute[String]
   }
-  def make(value : String) : Blueprint = TEXT(AttributeName.DEFAULT -> value)()
+  def make(value : String) : Blueprint = TEXT(DEFAULT -> value)()
 }

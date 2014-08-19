@@ -2,7 +2,6 @@ package proofpeer.vue.components
 
 import proofpeer.vue._
 import dom._
-import AttributeName._
 
 case class Dimensions(width : Int, height : Int, pixelRatio : Float)
 

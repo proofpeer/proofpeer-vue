@@ -42,4 +42,13 @@ package object dom {
   val FORM = primitiveClass("form")
   val SPAN = primitiveClass("span")
 
+  // Attributes
+
+  case object CLASSNAME extends StringAttributeName("classname")
+  case object VALUE extends StringAttributeName("value")
+  case object PLACEHOLDER extends StringAttributeName("placeholder")
+  case object REF extends StringAttributeName("ref")
+  case object TYPE extends StringAttributeName("type")
+
+
 }
