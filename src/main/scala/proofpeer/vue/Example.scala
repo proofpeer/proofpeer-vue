@@ -7,9 +7,10 @@ import js.annotation.JSExport
 object Example {
 
   import DOM._
+  import AttributeName._
 
   def style(s : String) : Attributes = {
-    Attributes(AttributeName.STYLE -> s)
+    Attributes(STYLE -> s)
   }
 
   case class CommentData(author : String, text : String, background : String)
@@ -63,10 +64,10 @@ object Example {
       val blueprint = component.blueprint
       val state = component.getLocalState()
       val commentBoxState = state.asInstanceOf[CommentBoxState]
-      DIV(Event.handle(Event.onSubmit -> handler(component)))(
+      DIV(Event.OnSubmit -> handler(component))(
         H1()(text("Comments")),
-        CommentForm(StringKey("form"))(),
-        CommentList(CommentListParams(commentBoxState.comments))()
+        CommentForm(KEY -> "form")(),
+        CommentList(DEFAULT -> commentBoxState.comments)()
       )
     }
 
@@ -85,21 +86,17 @@ object Example {
     }
   }
 
-  case class CommentListParams(comments : List[CommentData]) extends Parameters 
   object CommentList extends CustomComponentClass with Event.Handler {
     def render(component : CustomComponent) : Blueprint = {
-      val data : CommentListParams = component.blueprint()
-      val eventHandlers = Event.handle(Event.onClick -> this)
+      val data = component.blueprint.attribute[List[CommentData]]
       val comments = 
-        for (d <- data.comments) 
-          yield Comment(CommentParams(d.author, d.background), 
-            eventHandlers)(text(d.text))
-      DIV(eventHandlers)(comments : _*)
+        for (d <- data) 
+          yield Comment(Event.OnClick -> this, DEFAULT -> CommentParams(d.author, d.background))(text(d.text))
+      DIV(Event.OnClick -> this)(comments : _*)
     }
     def handleEvent(component : Component, event : Event) {
       event.stopPropagation()
       event.preventDefault()
-      println("alright: " + component.blueprint.parameters)
     }
   }
 
@@ -108,9 +105,9 @@ object Example {
     def render(component : CustomComponent) : Blueprint = {
       import AttributeName._
       FORM()(
-        INPUT(StringKey("author"), Attributes(TYPE->"text", PLACEHOLDER->"Your name"))(),
-        INPUT(StringKey("comment"), Attributes(TYPE->"text", PLACEHOLDER->"Say something"))(),
-        INPUT(Attributes(TYPE->"submit", VALUE->"Post"))())
+        INPUT(KEY -> "author", TYPE -> "text", PLACEHOLDER -> "Your name")(),
+        INPUT(KEY -> "comment", TYPE -> "text", PLACEHOLDER -> "Say something")(),
+        INPUT(TYPE->"submit", VALUE->"Post")())
     }
     override def setState(component : CustomComponent, s : Any) {
       val state = s.asInstanceOf[CommentFormState]
@@ -124,11 +121,11 @@ object Example {
     }
   }
 
-  case class CommentParams(author : String, background : String) extends Parameters
+  case class CommentParams(author : String, background : String)
   object Comment extends CustomComponentClass {
     def render(component : CustomComponent) : Blueprint = {
       val blueprint = component.blueprint
-      val params : CommentParams = blueprint()
+      val params : CommentParams = blueprint.attribute
       DIV(style("background-color:" + params.background))(
         (H2()(text(params.author)) +:
         blueprint.children) : _*
@@ -145,7 +142,7 @@ object Example {
 
   @JSExport
   def pagecontainer() : Unit = {
-    val elem = DIV(Attributes(AttributeName.STYLE -> "background-color:red;width:40px;height:20px"))()
+    val elem = DIV(STYLE -> "background-color:red;width:40px;height:20px")()
     RenderTarget(lookupNode("content").get).render(PageContainer()(elem))
   }
 

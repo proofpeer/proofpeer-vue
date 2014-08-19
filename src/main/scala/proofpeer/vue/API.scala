@@ -1,8 +1,5 @@
 package proofpeer.vue
 
-trait Parameters
-case object NoParameters extends Parameters
-
 trait Event {
   def eventName : Event.Name
   def info : Any
@@ -12,7 +9,16 @@ trait Event {
 
 object Event {
 
-  trait Name
+  class Name(n : String) extends AttributeName[Handler] {
+    val name = "event:" + n
+    override def toString(value : Any) : String = null
+    def read(value : Any) : Option[Handler] = {
+      value match {
+        case h : Handler => Some(h)
+        case _ => None
+      }
+    }
+  }
 
   trait Handler {
     def handleEvent(component : Component, event : Event)
@@ -26,8 +32,8 @@ object Event {
     Map(handlers : _*)
   }
   
-  case object onClick extends Name
-  case object onSubmit extends Name
+  case object OnClick extends Name("Click")
+  case object OnSubmit extends Name("Submit")
 
   def publishEvent(origin : Component, eventName : Event.Name, info : Any, performDefault : Event => Unit) {
     Impl.publishEvent(origin, eventName, info, performDefault)
@@ -35,20 +41,14 @@ object Event {
 
 }
 
-trait Key
-case object NoKey extends Key
-case class StringKey(s : String) extends Key
-case class IntKey(i : Int) extends Key
-
 sealed case class Blueprint(
   componentClass : ComponentClass,
-  key : Key,
-  parameters : Parameters,
   eventHandlers : Event.Handlers,
+  attributes : Attributes,
   children : Seq[Blueprint]) 
 {
-  def apply[T]() = parameters.asInstanceOf[T]
-  def hasParams : Boolean = parameters != NoParameters
+  def attribute[T] : T = attributes[T]()
+  def key : Option[Any] = attributes.get(AttributeName.KEY)
 }
 
 sealed abstract class ComponentClass {
@@ -59,10 +59,10 @@ sealed abstract class ComponentClass {
 
   def name : String
 
-  def createBlueprint(key : Key, parameters : Parameters, 
-    eventHandlers : Event.Handlers, children : Seq[Blueprint]): Blueprint =
+  def createBlueprint(eventHandlers : Event.Handlers, attributes : Attributes, 
+    children : Seq[Blueprint]): Blueprint =
   {
-    Blueprint(this, key, parameters, eventHandlers, children)
+    Blueprint(this, eventHandlers, attributes, children)
   }
 
   final def isPrimitive : Boolean = 
@@ -72,50 +72,41 @@ sealed abstract class ComponentClass {
     }
   
   /***********************************
-   * Implementations of apply Syntax *
+   * Apply Syntax *
    ***********************************/
 
-  final def apply(key : Key, parameters : Parameters, 
-    eventHandlers : Event.Handlers) (children : Blueprint*): Blueprint =
-  {
-    createBlueprint(key, parameters, eventHandlers, children)
-  }
-  
-  final def apply(key : Key, parameters : Parameters)(children : Blueprint*): Blueprint =
-  {
-    createBlueprint(key, parameters, Event.NoHandlers, children)
-  }
-
-  final def apply(key : Key, eventHandlers : Event.Handlers)(children : Blueprint*): Blueprint =
-  {
-    createBlueprint(key, NoParameters, eventHandlers, children)
-  }
-
-  final def apply(key : Key)(children : Blueprint*): Blueprint =
-  {
-    createBlueprint(key, NoParameters, Event.NoHandlers, children)
-  }
-
-  final def apply(parameters : Parameters, eventHandlers : Event.Handlers)
+  final def apply(eventHandlers : Event.Handlers, attributes : Attributes) 
     (children : Blueprint*): Blueprint =
   {
-    createBlueprint(NoKey, parameters, eventHandlers, children)
+    createBlueprint(eventHandlers, attributes, children)
   }
-  
-  final def apply(parameters : Parameters)(children : Blueprint*): Blueprint =
+
+  final def apply(attributes : Attributes)(children : Blueprint*): Blueprint =
   {
-    createBlueprint(NoKey, parameters, Event.NoHandlers, children)
+    createBlueprint(Event.NoHandlers, attributes, children)
   }
 
   final def apply(eventHandlers : Event.Handlers)(children : Blueprint*): Blueprint =
   {
-    createBlueprint(NoKey, NoParameters, eventHandlers, children)
+    createBlueprint(eventHandlers, Attributes(), children)
   }
 
-  final def apply()(children : Blueprint*): Blueprint =
+  final def apply(params : (AttributeName[Any], Any)*) 
+    (children : Blueprint*): Blueprint =
   {
-    createBlueprint(NoKey, NoParameters, Event.NoHandlers, children)
+    var handlers : Event.Handlers = Map()
+    var attributes : Attributes = Attributes()
+    for ((name, value) <- params) {
+      name match {
+        case eventName : Event.Name => 
+          handlers = handlers + (eventName -> eventName.read(value).get)
+        case _ => 
+          attributes = attributes + (name -> name.read(value).get)
+      }
+    }
+    createBlueprint(handlers, attributes, children)
   }
+
 
 }
 
@@ -126,10 +117,8 @@ trait Component {
   def setState(state : Any)
   def mountNode : DOM.Node
   def subComponents : Seq[Component]
-  def lookup(key : Key) : Option[Component]
-  def apply(key : Key) : Component = lookup(key).get
-  def apply(key : String) : Component = apply(StringKey(key))
-  def apply(key : Int) : Component = apply(IntKey(key))
+  def lookup(key : Any) : Option[Component]
+  def apply(key : Any) : Component = lookup(key).get
 }
 
 trait CustomComponent extends Component {

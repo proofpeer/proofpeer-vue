@@ -75,15 +75,11 @@ object DOM {
     extends PrimitiveComponentClass
   {
 
-    private def attributesOf(blueprint : Blueprint) : Attributes = {
-      if (blueprint.hasParams) blueprint() else Attributes()
-    }
-
     def render(component : Component) : DOM.Node = {
-      val attributes = attributesOf(component.blueprint)
       val elem = document.createElement(name)
-      for ((attrName, attrValue) <- attributes.toSeq) {
-        elem.setAttribute(attrName.name, attrName.toString(attrValue))
+      for ((attrName, attrValue) <- component.blueprint.attributes.toSeq) {
+        val value = attrName.toString(attrValue)
+        if (value != null) elem.setAttribute(attrName.name, value)
       }
       mkNode(elem)
     }
@@ -91,30 +87,29 @@ object DOM {
     def updateBlueprint(component : Component, blueprint : Blueprint, optState : Option[Any]) {
       val node = component.mountNode
       val oldBlueprint = component.blueprint
-      val oldAttributes = attributesOf(oldBlueprint)
-      val attributes = attributesOf(blueprint)
+      val oldAttributes = oldBlueprint.attributes
+      val attributes = blueprint.attributes
       val elem = node.inner
       val removedAttributes = oldAttributes.attributeNames -- attributes.attributeNames
       for (attrName <- removedAttributes) elem.removeAttribute(attrName.name)
       for ((attrName, attrValue) <- attributes.toSeq) {
-        elem.setAttribute(attrName.name, attrName.toString(attrValue))
+        val value = attrName.toString(attrValue)
+        if (value != null) elem.setAttribute(attrName.name, value)
       }
     }
 
   }
 
-  case class StringParam(value : String) extends Parameters
-
   object TEXT extends PrimitiveComponentClass {
     def name = "text"
     def render(component : Component) : DOM.Node = {
-      val param : StringParam = component.blueprint()
-      val elem = document.createTextNode(param.value)
+      val param : String = component.blueprint.attribute
+      val elem = document.createTextNode(param)
       mkNode(elem)
     }
     def updateBlueprint(component : Component, blueprint : Blueprint, optState : Option[Any]) {
       val node = component.mountNode
-      node.inner.nodeValue = blueprint[StringParam]().value
+      node.inner.nodeValue = blueprint.attribute[String]
     }
   }
 
@@ -139,7 +134,7 @@ object DOM {
   private def primitiveClass(name : String) : PrimitiveComponentClass = 
     new DefaultPrimitiveComponent(name)
 
-  def text(value : String) = TEXT(StringParam(value))()
+  def text(value : String) = TEXT(AttributeName.DEFAULT -> value)()
 
   val DIV = primitiveClass("div")
   val H1 = primitiveClass("h1")

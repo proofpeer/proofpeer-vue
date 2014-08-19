@@ -15,7 +15,7 @@ object AttributeName {
     def read(value : Any) = Some(value.toString)
   }
 
-  abstract class IntAttributeName extends AttributeName[Int] {
+  abstract class IntAttributeName(val name : String) extends AttributeName[Int] {
     def read(value : Any) = {
       value match {
         case i : Int => Some(i)
@@ -23,6 +23,13 @@ object AttributeName {
       }
     }
   }  
+
+  abstract class CustomAttributeName[T](val name : String) extends AttributeName[T] {
+    def read(value : Any) : Option[T] = {
+      Some(value.asInstanceOf[T])
+    }
+    override def toString(value : Any) : String = null
+  }
 
   case object STYLE extends AttributeName[CaseInsensitiveMap[String]] {
     val name = "style"
@@ -36,6 +43,8 @@ object AttributeName {
             styles = styles.put(seq(0), seq(1)) 
           }
           Some(styles)
+        case styles : CaseInsensitiveMap[_] =>
+          Some(styles.asInstanceOf[CaseInsensitiveMap[String]])
         case _ => None
       }
     }
@@ -48,6 +57,9 @@ object AttributeName {
     }
   }
 
+  case object DEFAULT extends CustomAttributeName[Any]("default") 
+  case object KEY extends CustomAttributeName[Any]("key")
+
   case object CLASSNAME extends StringAttributeName("classname")
   case object VALUE extends StringAttributeName("value")
   case object PLACEHOLDER extends StringAttributeName("placeholder")
@@ -55,11 +67,12 @@ object AttributeName {
   case object TYPE extends StringAttributeName("type")
 }
 
-trait Attributes extends Parameters {
+trait Attributes {
   def attributeNames : Set[AttributeName[_]]
   def toSeq : Seq[(AttributeName[Any], Any)]
   def get[T](attributeName : AttributeName[T]) : Option[T]
   def apply[T](attributeName : AttributeName[T]) : T = get(attributeName).get
+  def apply[T]() : T = this(AttributeName.DEFAULT).asInstanceOf[T]
   def +[T](attribute : (AttributeName[T], T)) : Attributes
   def ++(attributes : Attributes) : Attributes
 }

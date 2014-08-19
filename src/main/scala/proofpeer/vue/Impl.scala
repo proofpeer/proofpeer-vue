@@ -19,9 +19,9 @@ object Impl {
       if (h == 0) this.id - that.id else h
     }
     def executeStateChange(s : Any)
-    def lookup(key : Key) : Option[Component] = {
+    def lookup(key : Any) : Option[Component] = {
       for (c <- subComponents) {
-        if (c.blueprint.key == key) return Some(c)
+        if (c.blueprint.key == Some(key)) return Some(c)
       }
       for (c <- subComponents) {
         c.lookup(key) match {
@@ -187,13 +187,14 @@ object Impl {
   private def updateBlueprints(activeElement : Option[DOM.Node], parentHeight : Int,
     parentNode : DOM.Node, blueprints : Seq[Blueprint], nodes : Seq[VirtualNode]) : Seq[VirtualNode] =
   {
+    type Key = Any
     var keyedNodes : Map[Key, (VirtualNode, Int)] = Map()
     var leftNodes : List[(VirtualNode, Int)] = List()
     var i : Int = 0
     for (node <- nodes) {
       node.blueprint.key match {
-        case NoKey => leftNodes = (node, i) :: leftNodes
-        case key =>
+        case None => leftNodes = (node, i) :: leftNodes
+        case Some(key) =>
           keyedNodes.get(key) match {
             case None =>
               keyedNodes = keyedNodes + (key -> (node, i)) 
@@ -232,14 +233,14 @@ object Impl {
     }    
     for (blueprint <- blueprints) {
       blueprint.key match {
-        case NoKey => 
+        case None => 
           leftNodes match {
             case (virtualNode, i) :: others => 
               addExisting(virtualNode, i, blueprint)
               leftNodes = others
             case _ => addNew(blueprint)
           }
-        case key =>
+        case Some(key) =>
           keyedNodes.get(key) match {
             case None => addNew(blueprint)
             case Some((virtualNode, i)) =>
@@ -352,8 +353,8 @@ object Impl {
     def nativeName(eventName : Event.Name) : Option[String] = {
       Some(
         eventName match {
-          case Event.onClick => "click"
-          case Event.onSubmit => "submit"          
+          case Event.OnClick => "click"
+          case Event.OnSubmit => "submit"          
           case _ => return None
         })
     }
@@ -363,9 +364,9 @@ object Impl {
       Some(
         nativeName.toLowerCase match {
           case "click" => 
-            new SyntheticEvent(Event.onClick, null, nativeEvent)
+            new SyntheticEvent(Event.OnClick, null, nativeEvent)
           case "submit" => 
-            new SyntheticEvent(Event.onSubmit, null, nativeEvent)
+            new SyntheticEvent(Event.OnSubmit, null, nativeEvent)
           case _ => return None  
         })
     }
