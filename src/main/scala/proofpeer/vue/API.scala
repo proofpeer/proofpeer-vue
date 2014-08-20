@@ -134,6 +134,9 @@ sealed abstract class ComponentClass {
 // Components can also be used as keys (for example in maps)
 trait Component {
   def blueprint : Blueprint
+  def attributes = blueprint.attributes
+  def attribute[T] = blueprint.attribute[T]
+  def children = blueprint.children
   def getState[T] : T
   def setState(state : Any)
   def mountNode : dom.Node

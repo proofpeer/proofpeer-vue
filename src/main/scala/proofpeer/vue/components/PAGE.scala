@@ -4,7 +4,7 @@ import proofpeer.vue._
 import dom._
 import Layout._
 
-object PageContainer extends CustomComponentClass {
+object PAGE extends CustomComponentClass {
 
   private def grabDimensions : Dimensions = {
     val pageWidth = window().innerWidth.asInstanceOf[Int]
@@ -34,17 +34,17 @@ object PageContainer extends CustomComponentClass {
 
 }
 
-object ShowBounds extends CustomComponentClass {
+object SHOW_BOUNDS extends CustomComponentClass {
 
   def render(component : CustomComponent) : Blueprint = {
     val t = 
-      component.blueprint.attributes.get(BOUNDS) match {
+      component.attributes.get(BOUNDS) match {
         case None => "no bounds found"
         case Some(bounds) => 
           "("+bounds.x+", "+bounds.y+"), "+bounds.width+"x"+bounds.height+
           ", pixelRatio="+bounds.pixelRatio
       }
-    CENTERED(component.blueprint.attributes * (STYLE -> "background-color:black;color:white"))(text(t))
+    CENTERED(component.attributes * (STYLE -> "background-color:black;color:white"))(text(t))
   }
 
 }
@@ -55,7 +55,7 @@ object CENTERED extends CustomComponentClass {
     DIV(component)(
       DIV(STYLE -> "margin:auto;position:absolute;top:0;left:0;bottom:0;right:0;height:0px")(
         DIV(STYLE -> "display:table;margin:0 auto")(
-          component.blueprint.children : _*
+          component.children : _*
         )
       )
     )

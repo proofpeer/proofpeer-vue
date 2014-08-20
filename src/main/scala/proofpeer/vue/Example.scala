@@ -60,7 +60,6 @@ object Example {
     }
 
     def render(component : CustomComponent) : Blueprint = {
-      val blueprint = component.blueprint
       val state = component.getLocalState()
       val commentBoxState = state.asInstanceOf[CommentBoxState]
       DIV(Event.OnSubmit -> handler(component))(
@@ -87,7 +86,7 @@ object Example {
 
   object CommentList extends CustomComponentClass with Event.Handler {
     def render(component : CustomComponent) : Blueprint = {
-      val data = component.blueprint.attribute[List[CommentData]]
+      val data = component.attribute[List[CommentData]]
       val comments = 
         for (d <- data) 
           yield Comment(Event.OnClick -> this, DEFAULT -> CommentParams(d.author, d.background))(text(d.text))
@@ -122,11 +121,10 @@ object Example {
   case class CommentParams(author : String, background : String)
   object Comment extends CustomComponentClass {
     def render(component : CustomComponent) : Blueprint = {
-      val blueprint = component.blueprint
-      val params : CommentParams = blueprint.attribute
+      val params : CommentParams = component.attribute
       DIV(style("background-color:" + params.background))(
         (H2()(text(params.author)) +:
-        blueprint.children) : _*
+        component.children) : _*
       )
     }
   }
@@ -140,10 +138,9 @@ object Example {
 
   @JSExport
   def pagecontainer() : Unit = {
-    val elem = DIV(STYLE -> "background-color:red;width:40px;height:20px")()
     RenderTarget(lookupNode("content").get).render(
-      PageContainer()(
-        ShowBounds(STYLE->"background-color:blue")()
+      PAGE()(
+        SHOW_BOUNDS(STYLE->"background-color:blue")()
       )
     )
   }
