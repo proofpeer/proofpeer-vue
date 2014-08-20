@@ -141,7 +141,11 @@ object Example {
   @JSExport
   def pagecontainer() : Unit = {
     val elem = DIV(STYLE -> "background-color:red;width:40px;height:20px")()
-    RenderTarget(lookupNode("content").get).render(PageContainer()(elem))
+    RenderTarget(lookupNode("content").get).render(
+      PageContainer()(
+        ShowBounds(STYLE->"background-color:blue")()
+      )
+    )
   }
 
 }

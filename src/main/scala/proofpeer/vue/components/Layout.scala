@@ -14,7 +14,7 @@ object Layout {
     def y = position.y
     def width = dimensions.width
     def height = dimensions.height
-    def pixelRation = dimensions.pixelRatio
+    def pixelRatio = dimensions.pixelRatio
     def toAttributes : Attributes = {
       Attributes(STYLE -> ("position:absolute;left:"+x+"px;top:"+y+"px;width:"+width+"px;height:"+height+"px"),
                  BOUNDS -> this)

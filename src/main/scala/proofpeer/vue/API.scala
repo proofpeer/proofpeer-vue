@@ -49,17 +49,23 @@ sealed case class Blueprint(
 {
   def attribute[T] : T = attributes[T]()
   def key : Option[Any] = attributes.get(KEY)
-  def ++(attrs : Attributes) : Blueprint = {
-    Blueprint(componentClass, eventHandlers, attributes ++ attrs, children)    
+  def +(attrs : Attributes) : Blueprint = {
+    Blueprint(componentClass, eventHandlers, attributes + attrs, children)    
   }
-  def ++(attrs : (AttributeName[Any], Any)*) : Blueprint = {
-    this ++ Attributes(attrs : _*)
+  def +(attrs : (AttributeName[Any], Any)*) : Blueprint = {
+    this + Attributes(attrs : _*)
   }
-  def ++/(attrs : Attributes) : Blueprint = {
-    Blueprint(componentClass, eventHandlers, attributes ++/ attrs, children)    
+  def *(attrs : Attributes) : Blueprint = {
+    Blueprint(componentClass, eventHandlers, attributes * attrs, children)    
   }
-  def ++/(attrs : (AttributeName[Any], Any)*) : Blueprint = {
-    this ++/ Attributes(attrs : _*)
+  def *(attrs : (AttributeName[Any], Any)*) : Blueprint = {
+    this * Attributes(attrs : _*)
+  }
+  def /(attrs : Attributes) : Blueprint = {
+    Blueprint(componentClass, eventHandlers, attributes / attrs, children)    
+  }
+  def /(attrs : (AttributeName[Any], Any)*) : Blueprint = {
+    this / Attributes(attrs : _*)
   }
 }
 
@@ -84,7 +90,7 @@ sealed abstract class ComponentClass {
     }
   
   /***********************************
-   * Apply Syntax *
+   *           Apply Syntax          *
    ***********************************/
 
   final def apply(eventHandlers : Event.Handlers, attributes : Attributes) 
@@ -93,21 +99,16 @@ sealed abstract class ComponentClass {
     createBlueprint(eventHandlers, attributes, children)
   }
 
-  final def apply(attributes : Attributes)(children : Blueprint*): Blueprint =
-  {
-    createBlueprint(Event.NoHandlers, attributes, children)
-  }
-
   final def apply(eventHandlers : Event.Handlers)(children : Blueprint*): Blueprint =
   {
     createBlueprint(eventHandlers, Attributes(), children)
   }
 
-  final def apply(params : (AttributeName[Any], Any)*) 
+  final def apply(_attributes : Attributes, params : (AttributeName[Any], Any)*) 
     (children : Blueprint*): Blueprint =
   {
-    var handlers : Event.Handlers = Map()
-    var attributes : Attributes = Attributes()
+    var handlers : Event.Handlers = Event.NoHandlers
+    var attributes = _attributes
     for ((name, value) <- params) {
       name match {
         case eventName : Event.Name => 
@@ -118,6 +119,14 @@ sealed abstract class ComponentClass {
     }
     createBlueprint(handlers, attributes, children)
   }
+
+  final def apply(params : (AttributeName[Any], Any)*) 
+    (children : Blueprint*): Blueprint =
+    apply(Attributes(), params : _*)(children : _*)
+
+  final def apply(component : Component, params : (AttributeName[Any], Any)*) 
+    (children : Blueprint*): Blueprint =
+    apply(component.blueprint.attributes, params : _*)(children : _*)
 
 
 }

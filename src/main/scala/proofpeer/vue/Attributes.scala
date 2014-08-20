@@ -33,10 +33,12 @@ trait Attributes {
   def get[T](attributeName : AttributeName[T]) : Option[T]
   def apply[T](attributeName : AttributeName[T]) : T = get(attributeName).get
   def apply[T]() : T = this(DEFAULT).asInstanceOf[T]
-  def +(attribute : (AttributeName[Any], Any)) : Attributes
-  def ++(attributes : Attributes) : Attributes
-  def +/(attribute : (AttributeName[Any], Any)) : Attributes
-  def ++/(attributes : Attributes) : Attributes
+  def +(attributes : (AttributeName[Any], Any)*) : Attributes
+  def +(attributes : Attributes) : Attributes
+  def *(attributes : (AttributeName[Any], Any)*) : Attributes
+  def *(attributes : Attributes) : Attributes  
+  def /(attributes : (AttributeName[Any], Any)*) : Attributes
+  def /(attributes : Attributes) : Attributes
 }
 
 object Attributes {
@@ -56,15 +58,19 @@ object Attributes {
       attributes.toSeq
     }
 
-    def +(attribute : (AttributeName[Any], Any)) : Attributes = {
-      this ++ Attributes(attribute)
+    def +(attributes : (AttributeName[Any], Any)*) : Attributes = {
+      this + Attributes(attributes : _*)
     }
 
-    def +/(attribute : (AttributeName[Any], Any)) : Attributes = {
-      this ++/ Attributes(attribute)
+    def *(attributes : (AttributeName[Any], Any)*) : Attributes = {
+      this * Attributes(attributes : _*)
     }
 
-    def ++(that : Attributes) : Attributes = {
+    def /(attributes : (AttributeName[Any], Any)*) : Attributes = {
+      this / Attributes(attributes : _*)
+    }
+
+    def +(that : Attributes) : Attributes = {
       val attr = that.asInstanceOf[Attr]
       var attrs = attributes
       for ((attrName, attrValue) <- attr.attributes) {
@@ -78,7 +84,21 @@ object Attributes {
       Attr(attrs)    
     }
 
-    def ++/(that : Attributes) : Attributes = {
+    def *(that : Attributes) : Attributes = {
+      val attr = that.asInstanceOf[Attr]
+      var attrs = attributes
+      for ((attrName, attrValue) <- attr.attributes) {
+        attrs.get(attrName) match {
+          case None => 
+            attrs = attrs + (attrName -> attrValue)
+          case Some(oldAttrValue) =>
+            attrs = attrs + (attrName -> attrName.merge(attrValue, oldAttrValue))
+        }
+      }
+      Attr(attrs)    
+    }
+
+    def /(that : Attributes) : Attributes = {
       val attr = that.asInstanceOf[Attr]
       Attr(attributes ++ attr.attributes)    
     }  
