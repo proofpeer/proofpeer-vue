@@ -32,10 +32,6 @@ package object dom {
   private def primitiveClass(name : String) : PrimitiveComponentClass = 
     new DefaultPrimitiveComponent(name)
 
-  def ensure(condition : Boolean, errorMessage : String) {
-    if (!condition) throw new RuntimeException(errorMessage)
-  }
-
   def text(value : String) = TEXT.make(value)
 
   val DIV = primitiveClass("div")

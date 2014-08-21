@@ -2,7 +2,6 @@ package proofpeer.vue.components
 
 import proofpeer.vue._
 import dom._
-import Layout._
 
 object PAGE extends CustomComponentClass {
 
@@ -28,21 +27,24 @@ object PAGE extends CustomComponentClass {
     val dims = component.localState[Dimensions]
     ensure(component.blueprint.children.size == 1, "PageContainer expects exactly one child")
     val child = component.blueprint.children.head
-    val bounds = Bounds(Position(0, 0), dims).toAttributes
-    DIV(bounds + (STYLE -> "overflow:hidden"))(child + bounds)
+    val attrs = dims.toAttributes(0, 0)
+    DIV(attrs * (STYLE -> "overflow:hidden"))(child + attrs)
   }
 
 }
 
-object SHOW_BOUNDS extends CustomComponentClass {
+object SHOW_DIMS extends CustomComponentClass {
 
   def render(component : CustomComponent) : Blueprint = {
     val t = 
-      component.attributes.get(BOUNDS) match {
-        case None => "no bounds found"
-        case Some(bounds) => 
-          "("+bounds.x+", "+bounds.y+"), "+bounds.width+"x"+bounds.height+
-          ", pixelRatio="+bounds.pixelRatio
+      component.attributes.get(DIMS) match {
+        case None => "no dimensions found"
+        case Some(dims) => 
+          val ratio = math.round(dims.pixelRatio * 100) / 100.0
+          if (ratio == 1)
+            dims.width+"x"+dims.height
+          else
+            dims.width+"x"+dims.height+"@"+ratio
       }
     CENTERED(component.attributes * (STYLE -> "background-color:black;color:white"))(text(t))
   }

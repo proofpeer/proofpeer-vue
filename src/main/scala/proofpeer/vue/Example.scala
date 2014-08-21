@@ -136,11 +136,20 @@ object Example {
 
   import proofpeer.vue.components._
 
+  def simpleRaster : Blueprint = {
+    val elem1 = SHOW_DIMS(STYLE -> "background-color:blue")()
+    val pos1 = RasterPosition(Percentage(0), Percentage(0), Percentage(0.2), Percentage(1))
+    val elem2 = SHOW_DIMS(STYLE -> "background-color:gray")()
+    val pos2 = RasterPosition(Coordinate(0.2, 1), Percentage(0), Percentage(1), Percentage(1))
+    RASTER_LAYOUT(DEFAULT -> List(pos1, pos2))(elem1, elem2)
+  }
+
   @JSExport
   def pagecontainer() : Unit = {
     RenderTarget(lookupNode("content").get).render(
       PAGE()(
-        SHOW_BOUNDS(STYLE->"background-color:blue")()
+        //SHOW_DIMS(STYLE->"background-color:blue")()
+        simpleRaster
       )
     )
   }
