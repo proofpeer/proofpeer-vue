@@ -3,10 +3,13 @@ package proofpeer.vue.components
 import proofpeer.vue._
 import proofpeer.vue.dom._
 
-case class RasterPosition(x1 : Coordinate, y1 : Coordinate, 
-  x2 : Coordinate, y2 : Coordinate)
 
 object RASTER_LAYOUT extends CustomComponentClass {
+
+  object POSITIONS extends CustomAttributeName[List[Position]]("positions")
+
+  case class Position(x1 : Coordinate, y1 : Coordinate, 
+    x2 : Coordinate, y2 : Coordinate)
 
   private def rasterize(d : Int, c : Coordinate) : Int = {
     var i = math.round(d * c.percentage).asInstanceOf[Int]
@@ -19,7 +22,7 @@ object RASTER_LAYOUT extends CustomComponentClass {
   }
   
   def render(c : CustomComponent) : Blueprint = {
-    var positions : List[RasterPosition] = c.attribute
+    var positions = c.attributes(POSITIONS)
     var children = c.children
     val dims = c.attributes(DIMS)
     ensure(positions.size == children.size, "number of positions and children must match")

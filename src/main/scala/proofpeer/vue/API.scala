@@ -47,7 +47,6 @@ sealed case class Blueprint(
   attributes : Attributes,
   children : Seq[Blueprint]) 
 {
-  def attribute[T] : T = attributes[T]()
   def key : Option[Any] = attributes.get(KEY)
   def +(attrs : Attributes) : Blueprint = {
     Blueprint(componentClass, eventHandlers, attributes + attrs, children)    
@@ -135,7 +134,6 @@ sealed abstract class ComponentClass {
 trait Component {
   def blueprint : Blueprint
   def attributes = blueprint.attributes
-  def attribute[T] = blueprint.attribute[T]
   def children = blueprint.children
   def getState[T] : T
   def setState(state : Any)

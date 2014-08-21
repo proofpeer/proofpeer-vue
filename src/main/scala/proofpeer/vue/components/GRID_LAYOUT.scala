@@ -1,7 +1,5 @@
 package proofpeer.vue.components
 
-import proofpeer.vue._
-
 /** The grid is a tool for bringing order to (web) design.
   * For information on grids, read '''Ordering Disorder: Grid Principles for Web Design''' by ''Khoi Vinh''.
   */ 
@@ -88,7 +86,7 @@ trait GridStyle {
 }
 
 /** The GoldenGridSystem is defined by its width, the number of its units, and the baseline height.
-  * The units are all of equal width, and the width of its intra unit gutters is baseline/2, while
+  * The units are all of equal width, and the width of its intra unit gutters is baseline, while
   * the outermost gutters are adapted to fit the overall width of the grid. */
 class GoldenGridSystem(override val width : Int, val numUnits : Int, val baseline : Int) extends Grid {  
 
@@ -100,7 +98,7 @@ class GoldenGridSystem(override val width : Int, val numUnits : Int, val baselin
     case _ => false
   }
 
-  val gutter = baseline / 2 
+  val gutter = baseline  
   
   val (u, w) = {
       val u = width / numUnits - 2 * gutter
@@ -153,10 +151,52 @@ class GoldenGridSystem(override val width : Int, val numUnits : Int, val baselin
   
 }
 
-object GRID extends CustomAttributeName[Grid]("grid") 
+import proofpeer.vue._
+import proofpeer.vue.dom._
 
-case class GridPosition(startUnit : Coordinate, endUnit : Coordinate, 
-  startBaseline : Coordinate, endBaseline : Coordinate, zIndex : Int)
+object GRID_LAYOUT extends CustomComponentClass {
 
-class GRID_LAYOUT /*extends CustomComponentClass*/ {
+  case class Position(startUnit : Int, endUnit : Int,
+    includeLeftGutter : Boolean, includeRightGutter : Boolean,
+    startBaseline : Coordinate, endBaseline : Coordinate)
+
+  object GRID extends CustomAttributeName[Grid]("grid")
+  object POSITIONS extends CustomAttributeName[List[Position]]("positions")
+
+  private def computeBaseline(dims : Dimensions, grid : Grid, baseline : Coordinate) : Int = {
+    val numBaselines = dims.height / grid.baseline
+    if (numBaselines <= 1) return 0
+    var b = math.round((numBaselines - 1) * baseline.percentage).asInstanceOf[Int]
+    if (b < 0) b = 0
+    if (b >= numBaselines) b = numBaselines - 1
+    b = b + baseline.offset
+    if (b < 0) b = 0
+    if (b >= numBaselines) b = numBaselines - 1
+    return b
+  }
+
+  def render(c : CustomComponent) : Blueprint = {
+    val grid = c.attributes(GRID)
+    var positions : List[Position] = c.attributes(POSITIONS)
+    val dims = c.attributes(DIMS)
+    ensure(grid.width == dims.width, "grid has incompatible width")
+    var children = c.children
+    ensure(positions.size == children.size, "number of positions and children must match")
+    var result : List[Blueprint] = List()
+    while (!positions.isEmpty) {
+      val position = positions.head
+      val child = children.head
+      positions = positions.tail
+      children = children.tail
+      val (x, w) = grid.unitExtent(position.startUnit, position.endUnit,
+        position.includeLeftGutter, position.includeRightGutter)
+      val y1 = grid.baseline * computeBaseline(dims, grid, position.startBaseline)
+      val y2 = grid.baseline * (1 + computeBaseline(dims, grid, position.endBaseline)) - 1
+      val attrs = Dimensions(w, y2-y1+1, dims.pixelRatio).toAttributes(x, y1)
+      result = (child + attrs) :: result
+    }
+    DIV(c)(result.reverse : _*)
+  }
+
 }
+
