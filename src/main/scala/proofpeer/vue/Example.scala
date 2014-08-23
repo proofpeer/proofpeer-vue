@@ -151,29 +151,33 @@ object Example {
     RASTER_LAYOUT(POSITIONS -> List(pos1, pos2))(elem1, elem2)
   }
 
+  val lorem_ipsum = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec ultricies ex eu nibh mollis, ac lacinia libero blandit. Aenean vulputate tempus nulla in sodales. Proin elit erat, volutpat sed sem vel, vehicula posuere elit. Quisque vitae tortor sed ligula aliquam fermentum. Morbi sit amet volutpat diam. Aenean tincidunt dapibus accumsan. Donec tristique eros eget nulla mattis fermentum. Mauris quis mollis risus. Duis euismod, ligula faucibus blandit iaculis, sapien neque tincidunt orci, a viverra dui tortor scelerisque lacus. Aenean ut nisi aliquam, viverra dui mattis, pulvinar leo. Quisque est turpis, pulvinar ac tortor a, iaculis efficitur eros. Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. Ut ut euismod dui, ut auctor libero"
+
   def simpleGrid : Blueprint = {
     import GRID_LAYOUT._
     object SimpleGrid extends CustomComponentClass {
       def render(c : CustomComponent) : Blueprint = {
         val dims = c.attributes(DIMS)
-        val grid = new GoldenGridSystem(dims.width, 18, 16)
+        val grid = new GoldenGridSystem(dims.width, 18, 22)
         val topelem = SHOW_DIMS(STYLE -> "background-color:blue")()
         val subelem = SHOW_DIMS(STYLE -> "background-color:red")()
+        val textelem = DIV(STYLE->"overflow:hidden")(text(lorem_ipsum))
         val b1 = Percentage(0.4)
-        val b2 = Coordinate(0.4, 3)
-        val b3 = Coordinate(1.0, -2)
+        val b2 = Coordinate(0.4, 2)
+        val b3 = Coordinate(1.0, -1)
         val positions : List[Position] = List(
           Position(0, 17, true, true, Offset(0), b1),
           Position(1, 4, false, false, b2, b3),
           Position(5, 8, false, false, b2, b3),
           Position(9, 12, false, false, b2, b3),
           Position(13, 16, false, false, b2, b3))
-        GRID_LAYOUT(c, STYLE -> "background-color:darkgray", GRID -> grid, POSITIONS -> positions)(
+        GRID_LAYOUT(c, STYLE -> "background-color:darkgray", GRID -> grid, POSITIONS -> positions,
+          SHOW_GRID -> true)(
           topelem, 
-          subelem, 
-          subelem, 
-          subelem,
-          subelem)
+          textelem, 
+          textelem, 
+          textelem,
+          textelem)
       }
     }
     SimpleGrid()()

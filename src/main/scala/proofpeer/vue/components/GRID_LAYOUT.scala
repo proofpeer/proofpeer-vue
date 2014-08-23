@@ -86,8 +86,10 @@ trait GridStyle {
 }
 
 /** The GoldenGridSystem is defined by its width, the number of its units, and the baseline height.
-  * The units are all of equal width, and the width of its intra unit gutters is baseline, while
-  * the outermost gutters are adapted to fit the overall width of the grid. */
+  * The units are all of equal width, and the width of its intra unit gutters is baseline/2 
+  * (so the gap between two units is 2 * (baseline/2), while the outermost gutters are adapted to 
+  * fit the overall width of the grid. 
+  */
 class GoldenGridSystem(override val width : Int, val numUnits : Int, val baseline : Int) extends Grid {  
 
   override val hashCode : Int = List(width, numUnits, baseline).hashCode
@@ -98,7 +100,7 @@ class GoldenGridSystem(override val width : Int, val numUnits : Int, val baselin
     case _ => false
   }
 
-  val gutter = baseline  
+  val gutter = baseline / 2 
   
   val (u, w) = {
       val u = width / numUnits - 2 * gutter
@@ -162,6 +164,7 @@ object GRID_LAYOUT extends CustomComponentClass {
 
   object GRID extends CustomAttributeName[Grid]("grid")
   object POSITIONS extends CustomAttributeName[List[Position]]("positions")
+  object SHOW_GRID extends CustomAttributeName[Boolean]("showgrid")
 
   private def computeBaseline(dims : Dimensions, grid : Grid, baseline : Coordinate) : Int = {
     val numBaselines = dims.height / grid.baseline
@@ -183,6 +186,15 @@ object GRID_LAYOUT extends CustomComponentClass {
     var children = c.children
     ensure(positions.size == children.size, "number of positions and children must match")
     var result : List[Blueprint] = List()
+    val showgrid =
+      c.attributes.get(SHOW_GRID) match {
+        case None => false
+        case Some(b) => b
+      }
+    if (showgrid) {
+      positions = Position(0, grid.numUnits - 1, true, true, Percentage(0), Percentage(1)) :: positions
+      children = SHOW_GRID_COMPONENT(GRID -> grid)() +: children
+    }
     while (!positions.isEmpty) {
       val position = positions.head
       val child = children.head
@@ -196,6 +208,37 @@ object GRID_LAYOUT extends CustomComponentClass {
       result = (child + attrs) :: result
     }
     DIV(c)(result.reverse : _*)
+  }
+
+}
+
+object SHOW_GRID_COMPONENT extends CustomComponentClass {
+
+  val baseline_color = "red"
+  val unit_color = "#D5EAF7"
+  val gutter_color = "white"
+
+  def rect(color : String, x : Int, y : Int, w : Int, h : Int) : Blueprint = {
+    val attrs = Dimensions(w, h, 1).toAttributes(x, y)
+    val child = DIV(STYLE->("background-color:"+color))()
+    child + attrs
+  }
+
+  def render(c : CustomComponent) : Blueprint = {
+    val grid = c.attributes(GRID_LAYOUT.GRID)
+    val dims = c.attributes(DIMS)
+    var children : List[Blueprint] = List()
+    for (u <- 0 until grid.numUnits) {
+      children = rect(unit_color, grid.unitX(u), 0, grid.unitWidth(u), dims.height) :: children
+      children = rect(gutter_color, grid.leftGutterX(u), 0, grid.leftGutterWidth(u), dims.height) :: children
+      children = rect(gutter_color, grid.rightGutterX(u), 0, grid.rightGutterWidth(u), dims.height) :: children
+    }
+    var b = grid.baseline
+    while (b <= dims.height) {
+      children = rect(baseline_color, 0, b-1, dims.width, 1) :: children
+      b = b + grid.baseline
+    }
+    DIV(c)(children.reverse : _*)
   }
 
 }

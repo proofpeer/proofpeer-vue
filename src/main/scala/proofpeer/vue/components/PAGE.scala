@@ -46,7 +46,7 @@ object SHOW_DIMS extends CustomComponentClass {
           else
             dims.width+"x"+dims.height+"@"+ratio
       }
-    CENTERED(component.attributes * (STYLE -> "background-color:black;color:white"))(text(t))
+    CENTERED(component.attributes + (STYLE -> "background-color:black;color:white;opacity:0.4"))(text(t))
   }
 
 }
