@@ -19,16 +19,22 @@ case class Dimensions(
   def upperBounds : Dimensions = {
     Dimensions(None, None, pixelRatio, None, maximalWidth, None, maximalHeight)
   }
-  def minimalWidth : Option[Int] = {
-    width match {
+  def minimalWidth : Int = {
+    (width match {
       case None => min_width
       case _ => width
+    }) match {
+      case None => 0
+      case Some(width) => width
     }
   }
-  def minimalHeight : Option[Int] = {
-    height match {
+  def minimalHeight : Int = {
+    (height match {
       case None => min_height
       case _ => height
+    }) match {
+      case None => 0
+      case Some(height) => height
     }
   }
   def maximalWidth : Option[Int] = {

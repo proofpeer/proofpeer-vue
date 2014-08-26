@@ -46,8 +46,7 @@ object ALIGN extends CustomComponentClass {
     }
   }
 
-  private def align(min : Option[Int], max : Option[Int], preferred : Int, alignment : Int) : (Int, Int) = {
-    var minimal = if (min.isDefined) min.get else 0
+  private def align(minimal : Int, max : Option[Int], preferred : Int, alignment : Int) : (Int, Int) = {
     if (preferred <= minimal) {
       if (alignment < 0) 
         (minimal, 0)
