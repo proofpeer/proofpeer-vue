@@ -66,36 +66,3 @@ object SHOW_DIMS extends CustomComponentClass {
 
 }
 
-object CENTERED extends CustomComponentClass {
-
-  def render(parentNode : dom.Node, component : CustomComponent) : Blueprint = {
-    DIV(component)(
-      DIV(STYLE -> "margin:auto;position:absolute;top:0;left:0;bottom:0;right:0;height:0px")(
-        DIV(STYLE -> "display:table;margin:0 auto")(
-          component.children : _*
-        )
-      )
-    )
-  }
-
-}
-
-object CENTER extends CustomComponentClass {
-
-  def render(parentNode : dom.Node, component : CustomComponent) : Blueprint = {
-    val dims = component.attributes(DIMS)
-    val w = dims.width.get
-    val h = dims.height.get
-    ensure(component.children.size == 1, "exactly 1 child expected")
-    val child = component.children.head 
-    val (childWidth, childHeight) = RenderTarget.measure(parentNode, child + (DIMS -> dims.upperBound))
-    val x = (w-childWidth) / 2
-    val y = (h-childHeight) / 2
-    val childAttrs = Dimensions.make(childWidth, childHeight, dims.pixelRatio).toAttributes(x, y)
-    DIV(component)(
-      child + childAttrs
-    )
-  }  
-}
-
-

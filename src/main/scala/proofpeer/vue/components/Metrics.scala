@@ -16,8 +16,20 @@ case class Dimensions(
     Dimensions.absolutePosition(x, y, width, height) +
       (DIMS -> this)
   }
-  def upperBound : Dimensions = {
+  def upperBounds : Dimensions = {
     Dimensions(None, None, pixelRatio, None, maximalWidth, None, maximalHeight)
+  }
+  def minimalWidth : Option[Int] = {
+    width match {
+      case None => min_width
+      case _ => width
+    }
+  }
+  def minimalHeight : Option[Int] = {
+    height match {
+      case None => min_height
+      case _ => height
+    }
   }
   def maximalWidth : Option[Int] = {
     width match {
@@ -49,17 +61,14 @@ object Dimensions {
   }
 
   def make(width : Int, height : Int, pixelRatio : Double) : Dimensions = {
-    val w = Some(width)
-    val h = Some(height)
-    Dimensions(w, h, Some(pixelRatio), w, w, h, h)
+    Dimensions(Some(width), Some(height), Some(pixelRatio), None, None, None, None)
   }
 
   def make(width : Int, height : Int, pixelRatio : Option[Double]) : Dimensions = {
-    val w = Some(width)
-    val h = Some(height)
-    Dimensions(w, h, pixelRatio, w, w, h, h)
+    Dimensions(Some(width), Some(height), pixelRatio, None, None, None, None)
   }
 
+  val unknown : Dimensions = Dimensions(None, None, None, None, None, None, None)
 
 }
 
