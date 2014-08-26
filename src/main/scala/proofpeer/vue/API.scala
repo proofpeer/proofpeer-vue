@@ -151,8 +151,10 @@ trait CustomComponent extends Component {
 
 abstract class PrimitiveComponentClass extends ComponentClass {
   // render must depend only on the identity of the component and on component.blueprint
-  def render(component : Component) : dom.Node
-  def updateBlueprint(component : Component, newBlueprint : Blueprint, newState : Option[Any])
+  // the parent node can be used for things like measurements etc.; don't add the rendered node
+  // to the parentNode yourself, though! 
+  def render(parentNode : dom.Node, component : Component) : dom.Node 
+  def updateBlueprint(parentNode : dom.Node, component : Component, newBlueprint : Blueprint, newState : Option[Any])
   def updateState(component : Component, state : Any) {}
   def getState(component : Component) : Any = null
   def didMount(component : Component) {}
@@ -162,7 +164,9 @@ abstract class PrimitiveComponentClass extends ComponentClass {
 abstract class CustomComponentClass extends ComponentClass {
   def name = this.getClass.getName
   // render must depend only on the identity of the component and on component.blueprint and component.getLocalState
-  def render(component : CustomComponent) : Blueprint
+  // the parent node can be used for things like measurements etc.; don't add the rendered node
+  // to the parentNode yourself, though! 
+  def render(parentNode : dom.Node, component : CustomComponent) : Blueprint
   def componentWillMount(component : CustomComponent) {}
   def componentDidMount(component : CustomComponent) {} 
   def componentWillUnmount(component : CustomComponent) {}
@@ -175,8 +179,12 @@ abstract class CustomComponentClass extends ComponentClass {
 
 trait RenderTarget {
   def render(blueprint : Blueprint) 
+  def measure(blueprint : Blueprint) : (Int, Int)
 }
 
 object RenderTarget {
   def apply(node : dom.Node) : RenderTarget = Impl.createRenderTarget(node)
+  def measure(parentNode : dom.Node, blueprint : Blueprint) : (Int, Int) = {
+    this(parentNode).measure(blueprint)
+  }
 }

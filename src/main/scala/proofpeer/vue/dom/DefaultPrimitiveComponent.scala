@@ -6,16 +6,16 @@ class DefaultPrimitiveComponent(val name : String)
   extends PrimitiveComponentClass
 {
 
-  def render(component : Component) : dom.Node = {
+  def render(parentNode : dom.Node, component : Component) : dom.Node = {
     val elem = document().createElement(name)
     for ((attrName, attrValue) <- component.blueprint.attributes.toSeq) {
       val value = attrName.toString(attrValue)
-      if (value != null) elem.setAttribute(attrName.name, value)
+      if (value != null) elem.setAttribute(attrName.name, value)          
     }
     Node.make(elem)
   }
 
-  def updateBlueprint(component : Component, blueprint : Blueprint, optState : Option[Any]) {
+  def updateBlueprint(parentNode : dom.Node, component : Component, blueprint : Blueprint, optState : Option[Any]) {
     val node = component.mountNode
     val oldBlueprint = component.blueprint
     val oldAttributes = oldBlueprint.attributes

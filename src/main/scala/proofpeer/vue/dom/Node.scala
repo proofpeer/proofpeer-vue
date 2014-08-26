@@ -27,6 +27,17 @@ class Node(private val node : js.Dynamic) {
     node.contains(that()).asInstanceOf[Boolean]
   }
 
+  def isInDom : Boolean = {
+    var p = this
+    val doc = document()
+    do {
+      p = p.parentNode
+      if (p == null) return false
+      if (doc == p()) return true
+    } while (true)
+    false
+  }
+
   // returns the active element if there is one contained in this node
   def activeElement : Option[Node] = {
     val a = document().activeElement
@@ -35,10 +46,14 @@ class Node(private val node : js.Dynamic) {
     else None
   }
 
+  def parentNode : Node = Node.make(node.parentNode)
+
   def apply() : js.Dynamic = node
 
 }
 
 object Node {
-  def make(node : js.Dynamic) : Node = new Node(node)
+  def make(node : js.Dynamic) : Node = {
+    if (node == null) null else new Node(node)
+  }
 }

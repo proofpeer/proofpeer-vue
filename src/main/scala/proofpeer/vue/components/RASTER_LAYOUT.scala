@@ -21,22 +21,25 @@ object RASTER_LAYOUT extends CustomComponentClass {
     return i
   }
   
-  def render(c : CustomComponent) : Blueprint = {
+  def render(parentNode : dom.Node, c : CustomComponent) : Blueprint = {
     var positions = c.attributes(POSITIONS)
     var children = c.children
     val dims = c.attributes(DIMS)
     ensure(positions.size == children.size, "number of positions and children must match")
     var result : List[Blueprint] = List()
+    val w = dims.width.get
+    val h = dims.height.get
+    val pixelRatio = dims.pixelRatio.get
     while (!positions.isEmpty) {
       val position = positions.head
       val child = children.head
       positions = positions.tail
       children = children.tail
-      val x1 = rasterize(dims.width, position.x1)
-      val x2 = rasterize(dims.width, position.x2)
-      val y1 = rasterize(dims.height, position.y1)
-      val y2 = rasterize(dims.height, position.y2)
-      val attrs = Dimensions(x2-x1+1, y2-y1+1, dims.pixelRatio).toAttributes(x1, y1)
+      val x1 = rasterize(w, position.x1)
+      val x2 = rasterize(w, position.x2)
+      val y1 = rasterize(h, position.y1)
+      val y2 = rasterize(h, position.y2)
+      val attrs = Dimensions.make(x2-x1+1, y2-y1+1, pixelRatio).toAttributes(x1, y1)
       result = (child + attrs) :: result
     }
     DIV(c)(result.reverse : _*)

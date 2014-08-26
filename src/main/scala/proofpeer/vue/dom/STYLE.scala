@@ -13,7 +13,7 @@ case object STYLE extends AttributeName[CaseInsensitiveMap[String]] {
         for (style <- split_nonempty(s, ";")) {
           val seq = split(style, ":")
           if (seq.size != 2) throw new RuntimeException("invalid style '"+style+"'")
-          styles = styles.put(seq(0), seq(1)) 
+          styles = styles.put(seq(0).trim, seq(1)) 
         }
         Some(styles)
       case styles : CaseInsensitiveMap[_] =>

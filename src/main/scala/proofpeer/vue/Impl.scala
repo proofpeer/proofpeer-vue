@@ -117,23 +117,24 @@ object Impl {
     runningStateUpdates = false
   }
 
-  private def createPrimitiveVirtualNode(height : Int, primitiveClass : PrimitiveComponentClass, 
+  private def createPrimitiveVirtualNode(parentNode : dom.Node, height : Int, primitiveClass : PrimitiveComponentClass, 
     blueprint : Blueprint) : PrimitiveVirtualNode = 
   {
     val vnode = new PrimitiveVirtualNode(height)
     vnode.blueprint = blueprint
-    vnode.mountNode = primitiveClass.render(vnode)
-    val children = blueprint.children.map(c => createVirtualNode(height + 1, c))
-    for (child <- children) {
+    vnode.mountNode = primitiveClass.render(parentNode, vnode)
+    parentNode.appendChild(vnode.mountNode)
+    val children = blueprint.children.map(c => createVirtualNode(vnode.mountNode, height + 1, c))
+    /*for (child <- children) {
       vnode.mountNode.appendChild(child.mountNode)
-    }
+    }*/
     vnode.childNodes = children
     EventHandling.updateHandlers(vnode, Event.NoHandlers, blueprint.eventHandlers)   
     primitiveClass.didMount(vnode) 
     return vnode
   }
 
-  private def createCustomVirtualNode(height : Int, customClass : CustomComponentClass, 
+  private def createCustomVirtualNode(parentNode : dom.Node, height : Int, customClass : CustomComponentClass, 
     blueprint : Blueprint) : CustomVirtualNode = 
   {
     val vnode = new CustomVirtualNode(height)
@@ -141,20 +142,21 @@ object Impl {
     customClass.componentWillMount(vnode)
     val optState = consumeStateUpdate(vnode)
     if (optState.isDefined) vnode._localState = optState.get
-    val representingBlueprint = customClass.render(vnode)
-    vnode.representation = createVirtualNode(height + 1, representingBlueprint)
+    val representingBlueprint = customClass.render(parentNode, vnode)
+    vnode.representation = createVirtualNode(parentNode, height + 1, representingBlueprint)
     vnode.mountNode = vnode.representation.mountNode
     EventHandling.updateHandlers(vnode, Event.NoHandlers, blueprint.eventHandlers)
+    //parentNode.appendChild(vnode.mountNode)
     customClass.componentDidMount(vnode)
     return vnode
   }
 
-  private def createVirtualNode(height : Int, blueprint : Blueprint) : VirtualNode = {
+  private def createVirtualNode(parentNode : dom.Node, height : Int, blueprint : Blueprint) : VirtualNode = {
     blueprint.componentClass match {
       case primitiveClass : PrimitiveComponentClass =>
-        createPrimitiveVirtualNode(height, primitiveClass, blueprint)
+        createPrimitiveVirtualNode(parentNode, height, primitiveClass, blueprint)
       case customClass : CustomComponentClass =>
-        createCustomVirtualNode(height, customClass, blueprint)
+        createCustomVirtualNode(parentNode, height, customClass, blueprint)
     }
   }
 
@@ -168,7 +170,7 @@ object Impl {
     val cl = customNode.customClass
     cl.componentWillUpdate(customNode, state)
     customNode._localState = state
-    val newRepBlueprint = cl.render(customNode)
+    val newRepBlueprint = cl.render(customNode.mountNode.parentNode, customNode)
     val activeElement = customNode.mountNode.activeElement
     customNode.representation = updateBlueprint(activeElement, customNode.representation, newRepBlueprint)
     customNode.mountNode = customNode.representation.mountNode
@@ -229,7 +231,7 @@ object Impl {
       count = count + 1
     }
     def addNew(blueprint : Blueprint) {
-      val virtualNode = createVirtualNode(parentHeight + 1, blueprint)
+      val virtualNode = createVirtualNode(parentNode, parentHeight + 1, blueprint)
       result = new OrderedVirtualNode(virtualNode, None) :: result
     }    
     for (blueprint <- blueprints) {
@@ -281,7 +283,7 @@ object Impl {
   {
     if (virtualNode.blueprint == blueprint) return virtualNode
     if (differentComponentClasses(virtualNode.blueprint.componentClass, blueprint.componentClass)) {
-      val newVirtualNode = createVirtualNode(virtualNode.height, blueprint)
+      val newVirtualNode = createVirtualNode(virtualNode.mountNode.parentNode, virtualNode.height, blueprint)
       virtualNode.willUnmount()
       newVirtualNode.mountNode.replace(virtualNode.mountNode)
       return newVirtualNode
@@ -289,7 +291,7 @@ object Impl {
       virtualNode match {
         case primitiveNode : PrimitiveVirtualNode =>
           val optState = consumeStateUpdate(primitiveNode)
-          primitiveNode.primitiveClass.updateBlueprint(primitiveNode, blueprint, optState)
+          primitiveNode.primitiveClass.updateBlueprint(primitiveNode.mountNode.parentNode, primitiveNode, blueprint, optState)
           primitiveNode.childNodes = updateBlueprints(activeElement, virtualNode.height,
             primitiveNode.mountNode, blueprint.children, primitiveNode.childNodes)
         case customNode : CustomVirtualNode =>
@@ -302,7 +304,7 @@ object Impl {
           }
           if (optState.isDefined) customNode._localState = optState.get
           customNode.blueprint = blueprint
-          val newRepBlueprint = customNode.customClass.render(customNode)
+          val newRepBlueprint = customNode.customClass.render(customNode.mountNode.parentNode, customNode)
           customNode.representation = updateBlueprint(activeElement, customNode.representation, newRepBlueprint)
           customNode.mountNode = customNode.representation.mountNode
       }
@@ -461,10 +463,19 @@ object Impl {
 
     def render(blueprint : Blueprint) {
       if (virtualNode == null) {
-        virtualNode = createVirtualNode(0, blueprint)
-        domNode.appendChild(virtualNode.mountNode)
+        virtualNode = createVirtualNode(domNode, 0, blueprint)
+        //domNode.appendChild(virtualNode.mountNode)
       } else 
         virtualNode = updateBlueprint(virtualNode.mountNode.activeElement, virtualNode, blueprint)
+    }
+
+    def measure(_blueprint : Blueprint) : (Int, Int) = {
+      val blueprint = _blueprint + (dom.STYLE -> "visibility:hidden;position:absolute;display:block")
+      val vn = createVirtualNode(domNode, 0, blueprint)
+      val w = vn.mountNode().offsetWidth.asInstanceOf[Int]
+      val h = vn.mountNode().offsetHeight.asInstanceOf[Int]
+      domNode.removeChild(vn.mountNode)
+      (w, h)
     }
 
   }

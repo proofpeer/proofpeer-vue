@@ -59,7 +59,7 @@ object Example {
       dom.clearInterval(component.getState[CommentBoxState].intervalId)
     }
 
-    def render(component : CustomComponent) : Blueprint = {
+    def render(parentNode : dom.Node, component : CustomComponent) : Blueprint = {
       val state = component.getLocalState()
       val commentBoxState = state.asInstanceOf[CommentBoxState]
       DIV(Event.OnSubmit -> handler(component))(
@@ -88,7 +88,7 @@ object Example {
 
     object COMMENTS extends CustomAttributeName[List[CommentData]]("comments")
 
-    def render(component : CustomComponent) : Blueprint = {
+    def render(parentNode : dom.Node, component : CustomComponent) : Blueprint = {
       val data = component.attributes(COMMENTS)
       val comments = 
         for (d <- data) 
@@ -103,7 +103,7 @@ object Example {
 
   case class CommentFormState(author : String, comment : String) 
   object CommentForm extends CustomComponentClass {
-    def render(component : CustomComponent) : Blueprint = {
+    def render(parentNode : dom.Node, component : CustomComponent) : Blueprint = {
       FORM()(
         INPUT(KEY -> "author", TYPE -> "text", PLACEHOLDER -> "Your name")(),
         INPUT(KEY -> "comment", TYPE -> "text", PLACEHOLDER -> "Say something")(),
@@ -126,7 +126,7 @@ object Example {
 
     object PARAMS extends CustomAttributeName[CommentParams]("params")
 
-    def render(component : CustomComponent) : Blueprint = {
+    def render(parentNode : dom.Node, component : CustomComponent) : Blueprint = {
       val params : CommentParams = component.attributes(PARAMS)
       DIV(style("background-color:" + params.background))(
         (H2()(text(params.author)) +:
@@ -156,9 +156,9 @@ object Example {
   def simpleGrid : Blueprint = {
     import GRID_LAYOUT._
     object SimpleGrid extends CustomComponentClass {
-      def render(c : CustomComponent) : Blueprint = {
+      def render(parentNode : dom.Node, c : CustomComponent) : Blueprint = {
         val dims = c.attributes(DIMS)
-        val grid = new GoldenGridSystem(dims.width, 18, 22)
+        val grid = new GoldenGridSystem(dims.width.get, 18, 22)
         val topelem = SHOW_DIMS(STYLE -> "background-color:blue")()
         val subelem = SHOW_DIMS(STYLE -> "background-color:red")()
         val textelem = DIV(STYLE->"overflow:hidden")(text(lorem_ipsum))

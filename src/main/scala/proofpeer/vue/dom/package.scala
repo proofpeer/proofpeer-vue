@@ -33,12 +33,14 @@ package object dom {
     new DefaultPrimitiveComponent(name)
 
   def text(value : String) = TEXT.make(value)
+  def rawHtml(value : String) = RAW_HTML.make(value)
 
   val DIV = primitiveClass("div")
   val H1 = primitiveClass("h1")
   val H2 = primitiveClass("h2")
   val FORM = primitiveClass("form")
   val SPAN = primitiveClass("span")
+  val IMG = primitiveClass("img")
 
   // Attributes
 
@@ -47,6 +49,6 @@ package object dom {
   case object PLACEHOLDER extends StringAttributeName("placeholder")
   case object REF extends StringAttributeName("ref")
   case object TYPE extends StringAttributeName("type")
-
+  case object SRC extends StringAttributeName("src")
 
 }

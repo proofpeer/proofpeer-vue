@@ -167,7 +167,7 @@ object GRID_LAYOUT extends CustomComponentClass {
   object SHOW_GRID extends CustomAttributeName[Boolean]("showgrid")
 
   private def computeBaseline(dims : Dimensions, grid : Grid, baseline : Coordinate) : Int = {
-    val numBaselines = dims.height / grid.baseline
+    val numBaselines = dims.height.get / grid.baseline
     if (numBaselines <= 1) return 0
     var b = math.round((numBaselines - 1) * baseline.percentage).asInstanceOf[Int]
     if (b < 0) b = 0
@@ -178,11 +178,11 @@ object GRID_LAYOUT extends CustomComponentClass {
     return b
   }
 
-  def render(c : CustomComponent) : Blueprint = {
+  def render(parentNode : dom.Node, c : CustomComponent) : Blueprint = {
     val grid = c.attributes(GRID)
     var positions : List[Position] = c.attributes(POSITIONS)
     val dims = c.attributes(DIMS)
-    ensure(grid.width == dims.width, "grid has incompatible width")
+    ensure(Some(grid.width) == dims.width, "grid has incompatible width")
     var children = c.children
     ensure(positions.size == children.size, "number of positions and children must match")
     var result : List[Blueprint] = List()
@@ -204,7 +204,7 @@ object GRID_LAYOUT extends CustomComponentClass {
         position.includeLeftGutter, position.includeRightGutter)
       val y1 = grid.baseline * computeBaseline(dims, grid, position.startBaseline)
       val y2 = grid.baseline * (1 + computeBaseline(dims, grid, position.endBaseline)) - 1
-      val attrs = Dimensions(w, y2-y1+1, dims.pixelRatio).toAttributes(x, y1)
+      val attrs = Dimensions.make(w, y2-y1+1, dims.pixelRatio.get).toAttributes(x, y1)
       result = (child + attrs) :: result
     }
     DIV(c)(result.reverse : _*)
@@ -219,23 +219,24 @@ object SHOW_GRID_COMPONENT extends CustomComponentClass {
   val gutter_color = "white"
 
   def rect(color : String, x : Int, y : Int, w : Int, h : Int) : Blueprint = {
-    val attrs = Dimensions(w, h, 1).toAttributes(x, y)
+    val attrs = Dimensions.make(w, h, 1).toAttributes(x, y)
     val child = DIV(STYLE->("background-color:"+color))()
     child + attrs
   }
 
-  def render(c : CustomComponent) : Blueprint = {
+  def render(parentNode : dom.Node, c : CustomComponent) : Blueprint = {
     val grid = c.attributes(GRID_LAYOUT.GRID)
     val dims = c.attributes(DIMS)
+    val h = dims.height.get
     var children : List[Blueprint] = List()
     for (u <- 0 until grid.numUnits) {
-      children = rect(unit_color, grid.unitX(u), 0, grid.unitWidth(u), dims.height) :: children
-      children = rect(gutter_color, grid.leftGutterX(u), 0, grid.leftGutterWidth(u), dims.height) :: children
-      children = rect(gutter_color, grid.rightGutterX(u), 0, grid.rightGutterWidth(u), dims.height) :: children
+      children = rect(unit_color, grid.unitX(u), 0, grid.unitWidth(u), h) :: children
+      children = rect(gutter_color, grid.leftGutterX(u), 0, grid.leftGutterWidth(u), h) :: children
+      children = rect(gutter_color, grid.rightGutterX(u), 0, grid.rightGutterWidth(u), h) :: children
     }
     var b = grid.baseline
-    while (b <= dims.height) {
-      children = rect(baseline_color, 0, b-1, dims.width, 1) :: children
+    while (b <= h) {
+      children = rect(baseline_color, 0, b-1, dims.width.get, 1) :: children
       b = b + grid.baseline
     }
     DIV(c)(children.reverse : _*)

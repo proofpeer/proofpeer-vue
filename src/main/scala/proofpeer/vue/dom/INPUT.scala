@@ -5,8 +5,8 @@ import proofpeer.vue._
 object INPUT extends DefaultPrimitiveComponent("input")
 {
 
-  override def updateBlueprint(component : Component, blueprint : Blueprint, optState : Option[Any]) {
-    super.updateBlueprint(component, blueprint, optState)
+  override def updateBlueprint(parentNode : dom.Node, component : Component, blueprint : Blueprint, optState : Option[Any]) {
+    super.updateBlueprint(parentNode, component, blueprint, optState)
     if (optState.isDefined) updateState(component, optState.get)
   }
 
