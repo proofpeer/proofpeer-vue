@@ -91,7 +91,8 @@ object ALIGN extends CustomComponentClass {
     val (childWidth, childHeight) = RenderTarget.measure(parentNode, child + (DIMS -> dims.upperBounds))
     val (w, x) = align(dims.minimalWidth, dims.maximalWidth, childWidth, alignmentOf(halign))
     val (h, y) = align(dims.minimalHeight, dims.maximalHeight, childHeight, alignmentOf(valign))    
-    val childAttrs = Dimensions.make(childWidth, childHeight, dims.pixelRatio).toAttributes(x, y)
+    val childAttrs = Dimensions.make(childWidth, childHeight, dims.pixelRatio).toAttributes +
+      Dimensions.absoluteTopLeft(x, y)
     DIV(component, STYLE -> ("width:"+w+"px;height:"+h+"px;overflow:hidden"))(
       child + childAttrs
     )    

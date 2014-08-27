@@ -158,54 +158,201 @@ import proofpeer.vue.dom._
 
 object GRID_LAYOUT extends CustomComponentClass {
 
+  // This refers to either the start or end baseline of the component
+  // which comes componentIndexDelta before (componentIndexDelta < 0) or after (componentIndexDelta > 0)
+  // the current component. You can also refer to the start or end baseline of the 
+  // current component (componentIndexDelta = 0).
+  case class BaselineReference(componentIndexDelta : Int, start : Boolean)
+
+  trait BaselineComputation {
+    def apply(referencedBaselines : Array[Int]) : Int
+  }
+
+  case class Offset(offset : Int) extends BaselineComputation {
+    def apply(referencedBaselines : Array[Int]) : Int = {
+      ensure(referencedBaselines.size == 1, "Offset expects exactly one referenced baseline")
+      referencedBaselines(0) + offset
+    }
+  }
+
+  sealed trait Baseline 
+
+  // This is an absolute reference to a specific baseline.
+  case class Absolute(baseline : Int) extends Baseline 
+
+  // This refers to either the start or end baseline occupied by the component componentDelta 
+  // components prior to the the current component, with an offset added to that baseline.   
+  case class Relative(references : List[BaselineReference], computation : BaselineComputation) extends Baseline 
+
+  
+  sealed trait AutomaticMode
+  case object CUT extends AutomaticMode
+  case object FILL extends AutomaticMode
+
+  case class Automatic(mode : AutomaticMode) extends Baseline 
+  
+  private def isAutomatic(baseline : Baseline) : Boolean = {
+    baseline match {
+      case Automatic(_) => true
+      case _ => false
+    }
+  }
+
+  def relative(componentDelta : Int, start : Boolean, offset : Int) : Baseline = {
+    Relative(List(BaselineReference(componentDelta, start)), Offset(offset))
+  }
+
   case class Position(startUnit : Int, endUnit : Int,
     includeLeftGutter : Boolean, includeRightGutter : Boolean,
-    startBaseline : Coordinate, endBaseline : Coordinate)
+    startBaseline : Baseline, endBaseline : Baseline)
 
   object GRID extends CustomAttributeName[Grid]("grid")
   object POSITIONS extends CustomAttributeName[List[Position]]("positions")
   object SHOW_GRID extends CustomAttributeName[Boolean]("showgrid")
 
-  private def computeBaseline(dims : Dimensions, grid : Grid, baseline : Coordinate) : Int = {
-    val numBaselines = dims.height.get / grid.baseline
-    if (numBaselines <= 1) return 0
-    var b = math.round((numBaselines - 1) * baseline.percentage).asInstanceOf[Int]
-    if (b < 0) b = 0
-    if (b >= numBaselines) b = numBaselines - 1
-    b = b + baseline.offset
-    if (b < 0) b = 0
-    if (b >= numBaselines) b = numBaselines - 1
-    return b
+  private type Node = (Int, Boolean)
+
+  private def computeComponentOrder(positions : Seq[Position]) : Seq[Node] = {
+    var graph : Map[Node, Set[Node]] = Map()
+    def addNode(node : Node) {
+      if (!graph.get(node).isDefined)
+        graph = graph + (node -> Set())
+    }
+    def addDependency(node : Node, dependency : Node) {
+      graph.get(node) match {
+        case None => 
+          graph = graph + (node -> Set(dependency))
+        case Some(oldDependencies) =>
+          graph = graph + (node -> (oldDependencies + dependency))
+      }
+    }
+    def addPosition(index : Int, position : Position) {
+      val startBaseline = (index, true)
+      val endBaseline = (index, false)
+      position.startBaseline match {
+        case Automatic(_) =>
+          addDependency(startBaseline, endBaseline)
+        case Absolute(_) => 
+          addNode(startBaseline)
+        case Relative(references, _) => 
+          for (r <- references) {
+            addDependency(startBaseline, (index + r.componentIndexDelta, r.start))
+          }
+      }
+      position.endBaseline match {
+        case Automatic(_) =>
+          addDependency(endBaseline, startBaseline)
+        case Absolute(_) =>
+          addNode(endBaseline)
+        case Relative(references, _) =>
+          for (r <- references) {
+            addDependency(endBaseline, (index + r.componentIndexDelta, r.start))
+          }
+      }
+    }
+    var index = 0
+    for (p <- positions) {
+      addPosition(index, p)
+      index = index + 1
+    }
+    val (sorted, unsorted) = proofpeer.general.algorithms.TopologicalSort.compute(graph)
+    ensure(unsorted.isEmpty, "Cannot resolve dependencies between baselines.") 
+    sorted
   }
+
 
   def render(parentNode : dom.Node, c : CustomComponent) : Blueprint = {
     val grid = c.attributes(GRID)
     var positions : List[Position] = c.attributes(POSITIONS)
     val dims = c.attributes(DIMS)
     ensure(Some(grid.width) == dims.width, "grid has incompatible width")
-    var children = c.children
+    var children = c.children.toArray
     ensure(positions.size == children.size, "number of positions and children must match")
     var result : List[Blueprint] = List()
+
+    // optionally visualize the grid
     val showgrid =
       c.attributes.get(SHOW_GRID) match {
         case None => false
         case Some(b) => b
       }
     if (showgrid) {
-      positions = Position(0, grid.numUnits - 1, true, true, Percentage(0), Percentage(1)) :: positions
+      val numBaselines = dims.height.get / grid.baseline
+      positions = Position(0, grid.numUnits - 1, true, true, Absolute(0), Absolute(numBaselines-1)) :: positions
       children = SHOW_GRID_COMPONENT(GRID -> grid)() +: children
     }
-    while (!positions.isEmpty) {
-      val position = positions.head
-      val child = children.head
-      positions = positions.tail
-      children = children.tail
+
+    // compute the start and end baselines for each component
+    val componentOrder = computeComponentOrder(positions)
+    val numComponents = positions.size
+    val startBaselines : Array[Int] = new Array(numComponents)
+    val endBaselines : Array[Int] = new Array(numComponents)
+    val pos : Array[Position] = positions.toArray
+    for ((index, start) <- componentOrder) {
+      def store(baseline : Int) {
+        if (start) 
+          startBaselines(index) = baseline
+        else
+          endBaselines(index) = baseline        
+      }
+      val p = pos(index)
+      val baseline = if (start) p.startBaseline else p.endBaseline
+      baseline match {
+        case Absolute(baseline) => store(baseline)
+        case Relative(references, computation) =>
+          var baselines : Array[Int] = new Array(references.size)
+          var i = 0
+          for (r <- references) {
+            val baseline = 
+              if (r.start) 
+                startBaselines(index + r.componentIndexDelta) 
+              else
+                endBaselines(index + r.componentIndexDelta)
+            baselines(i) = baseline 
+            i = i + 1
+          } 
+          store(computation(baselines))
+        case Automatic(mode) =>
+          val child = children(index)
+          val (_, w) = grid.unitExtent(p.startUnit, p.endUnit,
+            p.includeLeftGutter, p.includeRightGutter)
+          val d = Dimensions(Some(w), None, dims.pixelRatio, None, None, None, None)
+          val (_, dy) = RenderTarget.measure(parentNode, child + d.toAttributes)
+          var h = dy / grid.baseline
+          if (dy % grid.baseline != 0) {
+            mode match {
+              case CUT => 
+              case FILL => h = h + 1
+            }
+          }
+          if (h <= 0) h = 1
+          if (start) 
+            store(endBaselines(index) - h + 1) 
+          else
+            store(startBaselines(index) + h - 1)
+      }
+    }
+
+    // actually render the components
+    var index = 0
+    while (index < numComponents) {
+      val position = pos(index)
+      val child = children(index)
       val (x, w) = grid.unitExtent(position.startUnit, position.endUnit,
         position.includeLeftGutter, position.includeRightGutter)
-      val y1 = grid.baseline * computeBaseline(dims, grid, position.startBaseline)
-      val y2 = grid.baseline * (1 + computeBaseline(dims, grid, position.endBaseline)) - 1
-      val attrs = Dimensions.make(w, y2-y1+1, dims.pixelRatio.get).toAttributes(x, y1)
+      var attrs : Attributes = null
+      if (isAutomatic(position.startBaseline) || isAutomatic(position.endBaseline)) {
+        val d = Dimensions(Some(w), None, dims.pixelRatio, None, None, None, None)
+        val y1 = grid.baseline * startBaselines(index)
+        attrs = d.toAttributes + Dimensions.absoluteTopLeft(x, y1)       
+      } else { 
+        val y1 = grid.baseline * startBaselines(index)
+        val y2 = grid.baseline * (1 + endBaselines(index)) - 1
+        attrs = Dimensions.make(w, y2-y1+1, dims.pixelRatio.get).toAttributes +
+          Dimensions.absoluteTopLeft(x, y1)
+      }
       result = (child + attrs) :: result
+      index = index + 1
     }
     DIV(c)(result.reverse : _*)
   }
@@ -219,7 +366,7 @@ object SHOW_GRID_COMPONENT extends CustomComponentClass {
   val gutter_color = "white"
 
   def rect(color : String, x : Int, y : Int, w : Int, h : Int) : Blueprint = {
-    val attrs = Dimensions.make(w, h, 1).toAttributes(x, y)
+    val attrs = Dimensions.make(w, h, 1).toAttributes + Dimensions.absoluteTopLeft(x, y)
     val child = DIV(STYLE->("background-color:"+color))()
     child + attrs
   }

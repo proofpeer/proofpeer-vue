@@ -142,15 +142,6 @@ object Example {
 
   import proofpeer.vue.components._
 
-  def simpleRaster : Blueprint = {
-    import RASTER_LAYOUT._
-    val elem1 = SHOW_DIMS(STYLE -> "background-color:blue")()
-    val pos1 = Position(Percentage(0), Percentage(0), Percentage(0.2), Percentage(1))
-    val elem2 = SHOW_DIMS(STYLE -> "background-color:gray")()
-    val pos2 = Position(Coordinate(0.2, 1), Percentage(0), Percentage(1), Percentage(1))
-    RASTER_LAYOUT(POSITIONS -> List(pos1, pos2))(elem1, elem2)
-  }
-
   val lorem_ipsum = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec ultricies ex eu nibh mollis, ac lacinia libero blandit. Aenean vulputate tempus nulla in sodales. Proin elit erat, volutpat sed sem vel, vehicula posuere elit. Quisque vitae tortor sed ligula aliquam fermentum. Morbi sit amet volutpat diam. Aenean tincidunt dapibus accumsan. Donec tristique eros eget nulla mattis fermentum. Mauris quis mollis risus. Duis euismod, ligula faucibus blandit iaculis, sapien neque tincidunt orci, a viverra dui tortor scelerisque lacus. Aenean ut nisi aliquam, viverra dui mattis, pulvinar leo. Quisque est turpis, pulvinar ac tortor a, iaculis efficitur eros. Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. Ut ut euismod dui, ut auctor libero"
 
   def simpleGrid : Blueprint = {
@@ -162,11 +153,12 @@ object Example {
         val topelem = SHOW_DIMS(STYLE -> "background-color:blue")()
         val subelem = SHOW_DIMS(STYLE -> "background-color:red")()
         val textelem = DIV(STYLE->"overflow:hidden")(text(lorem_ipsum))
-        val b1 = Percentage(0.4)
-        val b2 = Coordinate(0.4, 2)
-        val b3 = Coordinate(1.0, -1)
+        val numBaselines = dims.height.get / grid.baseline
+        val b1 = Absolute(math.round(0.4 * numBaselines).asInstanceOf[Int])
+        val b2 = Absolute(b1.baseline + 2)
+        val b3 = Absolute(numBaselines - 2)
         val positions : List[Position] = List(
-          Position(0, 17, true, true, Offset(0), b1),
+          Position(0, 17, true, true, Absolute(0), b1),
           Position(1, 4, false, false, b2, b3),
           Position(5, 8, false, false, b2, b3),
           Position(9, 12, false, false, b2, b3),
@@ -175,7 +167,7 @@ object Example {
           SHOW_GRID -> true)(
           topelem, 
           textelem, 
-          textelem, 
+          subelem, 
           textelem,
           textelem)
       }
@@ -187,8 +179,6 @@ object Example {
   def pagecontainer() : Unit = {
     RenderTarget(lookupNode("content").get).render(
       PAGE()(
-        //SHOW_DIMS(STYLE->"background-color:blue")()
-        //simpleRaster
         simpleGrid
       )
     )

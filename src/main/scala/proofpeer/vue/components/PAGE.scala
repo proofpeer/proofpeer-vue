@@ -27,7 +27,7 @@ object PAGE extends CustomComponentClass {
     val dims = component.localState[Dimensions]
     ensure(component.blueprint.children.size == 1, "PageContainer expects exactly one child")
     val child = component.blueprint.children.head
-    val attrs = dims.toAttributes(0, 0)
+    val attrs = dims.toAttributes + Dimensions.absoluteTopLeft(0, 0)
     DIV(attrs + (STYLE -> "overflow:hidden"))(child + attrs)
   }
 

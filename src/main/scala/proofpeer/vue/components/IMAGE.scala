@@ -59,7 +59,6 @@ object IMAGE extends CustomComponentClass {
 
     var source = sources.head
     for (s <- sources.tail) source = chooseBetterSource(source, s)
-    println("use source: " + source.url)
     
     val s = scaleFactor(source) 
     val sourceWidth = math.round(s / pixelRatio * source.width)
