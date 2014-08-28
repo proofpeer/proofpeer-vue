@@ -25,10 +25,12 @@ object PAGE extends CustomComponentClass {
 
   def render(parentNode : dom.Node, component : CustomComponent) : Blueprint = {
     val dims = component.localState[Dimensions]
+    val childDims = Dimensions(dims.width, dims.height, dims.pixelRatio, None, None, None, None)
     ensure(component.blueprint.children.size == 1, "PageContainer expects exactly one child")
     val child = component.blueprint.children.head
-    val attrs = dims.toAttributes + Dimensions.absoluteTopLeft(0, 0)
-    DIV(attrs + (STYLE -> "overflow:hidden"))(child + attrs)
+    val atZero = Dimensions.absoluteTopLeft(0,0)
+    val attrs = dims.toAttributes + atZero
+    DIV(attrs + (STYLE -> "overflow:hidden"))(child + childDims.toAttributes + atZero)
   }
 
 }

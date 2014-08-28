@@ -90,29 +90,22 @@ trait GridStyle {
   * (so the gap between two units is 2 * (baseline/2), while the outermost gutters are adapted to 
   * fit the overall width of the grid. 
   */
-class GoldenGridSystem(override val width : Int, val numUnits : Int, val baseline : Int) extends Grid {  
-
-  override val hashCode : Int = List(width, numUnits, baseline).hashCode
-
-  override def equals(other : Any) = other match {
-    case ggs : GoldenGridSystem => 
-      width == ggs.width && numUnits == ggs.numUnits && baseline == ggs.baseline
-    case _ => false
-  }
+class GoldenGridSystem(_width : Int, val numUnits : Int, val baseline : Int) extends Grid {  
 
   val gutter = baseline / 2 
   
   val (u, w) = {
-      val u = width / numUnits - 2 * gutter
+      val u = _width / numUnits - 2 * gutter
       if (u < 0) 
         (0, 0)
       else 
-        (u, width - numUnits * (u + 2 * gutter))
+        (u, _width - numUnits * (u + 2 * gutter))
     }
   val wleft = w / 2
   val wright = w - wleft
   val columnWidth = 2 * gutter + u
   val leftMostColumnWidth = wleft + columnWidth
+  override val width = wleft + numUnits * (u + 2 * gutter) + wright
     
   def leftGutterX(unit : Int) : Int = {
     unit match {
@@ -150,6 +143,14 @@ class GoldenGridSystem(override val width : Int, val numUnits : Int, val baselin
     else
       gutter
   }
+
+  override val hashCode : Int = List(width, numUnits, baseline).hashCode
+
+  override def equals(other : Any) = other match {
+    case ggs : GoldenGridSystem => 
+      width == ggs.width && numUnits == ggs.numUnits && baseline == ggs.baseline
+    case _ => false
+  }  
   
 }
 
@@ -265,22 +266,11 @@ object GRID_LAYOUT extends CustomComponentClass {
     val grid = c.attributes(GRID)
     var positions : List[Position] = c.attributes(POSITIONS)
     val dims = c.attributes(DIMS)
-    ensure(Some(grid.width) == dims.width, "grid has incompatible width")
+    ensure(grid.width >= dims.minimalWidth, "grid is not wide enough")
+
     var children = c.children.toArray
     ensure(positions.size == children.size, "number of positions and children must match")
     var result : List[Blueprint] = List()
-
-    // optionally visualize the grid
-    val showgrid =
-      c.attributes.get(SHOW_GRID) match {
-        case None => false
-        case Some(b) => b
-      }
-    if (showgrid) {
-      val numBaselines = dims.height.get / grid.baseline
-      positions = Position(0, grid.numUnits - 1, true, true, Absolute(0), Absolute(numBaselines-1)) :: positions
-      children = SHOW_GRID_COMPONENT(GRID -> grid)() +: children
-    }
 
     // compute the start and end baselines for each component
     val componentOrder = computeComponentOrder(positions)
@@ -288,12 +278,15 @@ object GRID_LAYOUT extends CustomComponentClass {
     val startBaselines : Array[Int] = new Array(numComponents)
     val endBaselines : Array[Int] = new Array(numComponents)
     val pos : Array[Position] = positions.toArray
+    var numBaselines = 0
     for ((index, start) <- componentOrder) {
       def store(baseline : Int) {
+        ensure(baseline >= 0, "baseline must be non-negative")
         if (start) 
           startBaselines(index) = baseline
         else
-          endBaselines(index) = baseline        
+          endBaselines(index) = baseline   
+        if (baseline >= numBaselines) numBaselines = baseline + 1     
       }
       val p = pos(index)
       val baseline = if (start) p.startBaseline else p.endBaseline
@@ -340,21 +333,55 @@ object GRID_LAYOUT extends CustomComponentClass {
       val child = children(index)
       val (x, w) = grid.unitExtent(position.startUnit, position.endUnit,
         position.includeLeftGutter, position.includeRightGutter)
-      var attrs : Attributes = null
-      if (isAutomatic(position.startBaseline) || isAutomatic(position.endBaseline)) {
-        val d = Dimensions(Some(w), None, dims.pixelRatio, None, None, None, None)
-        val y1 = grid.baseline * startBaselines(index)
-        attrs = d.toAttributes + Dimensions.absoluteTopLeft(x, y1)       
-      } else { 
-        val y1 = grid.baseline * startBaselines(index)
-        val y2 = grid.baseline * (1 + endBaselines(index)) - 1
-        attrs = Dimensions.make(w, y2-y1+1, dims.pixelRatio.get).toAttributes +
-          Dimensions.absoluteTopLeft(x, y1)
-      }
+      val attrs : Attributes = 
+        if (isAutomatic(position.startBaseline) || isAutomatic(position.endBaseline)) {
+          val d = Dimensions(Some(w), None, dims.pixelRatio, None, None, None, None)
+          val y1 = grid.baseline * startBaselines(index)
+          d.toAttributes + Dimensions.absoluteTopLeft(x, y1)       
+        } else { 
+          val y1 = grid.baseline * startBaselines(index)
+          val y2 = grid.baseline * (1 + endBaselines(index)) - 1
+          Dimensions.make(w, y2-y1+1, dims.pixelRatio.get).toAttributes +
+            Dimensions.absoluteTopLeft(x, y1)
+        }
       result = (child + attrs) :: result
       index = index + 1
     }
-    DIV(c)(result.reverse : _*)
+
+    val innerHeight = numBaselines * grid.baseline
+    var height = innerHeight
+    if (height < dims.minimalHeight) height = dims.minimalHeight
+    dims.maximalHeight match {
+      case None =>
+      case Some(h) => if (height > h) height = h
+    }
+
+    var width = grid.width
+    dims.maximalWidth match {
+      case None =>
+      case Some(w) =>
+        if (w < width) width = w
+    }
+
+    var resultingChildren = result.reverse
+
+    // optionally visualize the grid
+    val showgrid =
+      c.attributes.get(SHOW_GRID) match {
+        case None => false
+        case Some(b) => b
+      }
+    if (showgrid) {
+      val gdims = Dimensions.make(grid.width, innerHeight, dims.pixelRatio)
+      val attrs = gdims.toAttributes + Dimensions.absoluteTopLeft(0, 0) + (GRID -> grid)
+      resultingChildren = SHOW_GRID_COMPONENT(attrs)() :: resultingChildren
+    }
+    
+    val innerStyle = "overflow:hidden;position:absolute;top:0px;left:0px;width:"+grid.width+"px;height:"+innerHeight+"px"
+    val outerStyle = "overflow:scroll;width:"+width+"px;height:"+height+"px"
+    DIV(c, STYLE -> outerStyle)(
+      DIV(STYLE -> innerStyle)(resultingChildren : _*)
+    )
   }
 
 }
