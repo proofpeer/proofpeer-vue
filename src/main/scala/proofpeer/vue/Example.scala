@@ -149,7 +149,7 @@ object Example {
     object SimpleGrid extends CustomComponentClass {
       def render(parentNode : dom.Node, c : CustomComponent) : Blueprint = {
         val dims = c.attributes(DIMS)
-        val grid = new GoldenGridSystem(dims.width.get, 18, 22)
+        val grid = new GoldenGridSystem(dims.width.get, 18)
         val topelem = SHOW_DIMS(STYLE -> "background-color:blue")()
         val subelem = SHOW_DIMS(STYLE -> "background-color:red")()
         val textelem = DIV(STYLE->"overflow:hidden")(text(lorem_ipsum))

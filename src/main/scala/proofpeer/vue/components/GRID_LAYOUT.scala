@@ -90,14 +90,15 @@ trait GridStyle {
   * (so the gap between two units is 2 * (baseline/2), while the outermost gutters are adapted to 
   * fit the overall width of the grid. 
   */
-class GoldenGridSystem(_width : Int, val numUnits : Int, val baseline : Int) extends Grid {  
+class GoldenGridSystem(_width : Int, val numUnits : Int, val minUnitWidth : Int = 0) extends Grid {  
 
-  val gutter = baseline / 2 
+  val baseline = ConfigSheet().baselineHeight
+  val gutter = ConfigSheet().gutterWidth
   
   val (u, w) = {
       val u = _width / numUnits - 2 * gutter
-      if (u < 0) 
-        (0, 0)
+      if (u < minUnitWidth) 
+        (minUnitWidth, 0)
       else 
         (u, _width - numUnits * (u + 2 * gutter))
     }
@@ -201,6 +202,18 @@ object GRID_LAYOUT extends CustomComponentClass {
 
   def relative(componentDelta : Int, start : Boolean, offset : Int) : Baseline = {
     Relative(List(BaselineReference(componentDelta, start)), Offset(offset))
+  }
+
+  def belowPrevious(offset : Int) : Baseline = {
+    relative(-1, false, offset)
+  }
+
+  def heightBelow(height : Int) : Baseline = {
+    relative(0, true, height-1)
+  }
+
+  def heightAbove(height : Int) : Baseline = {
+    relative(0, false, -(height-1))
   }
 
   case class Position(startUnit : Int, endUnit : Int,

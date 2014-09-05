@@ -44,7 +44,7 @@ package object dom {
 
   // Attributes
 
-  case object CLASSNAME extends StringAttributeName("classname")
+  case object CLASS extends StringAttributeName("class")
   case object VALUE extends StringAttributeName("value")
   case object PLACEHOLDER extends StringAttributeName("placeholder")
   case object REF extends StringAttributeName("ref")

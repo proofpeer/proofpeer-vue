@@ -464,7 +464,6 @@ object Impl {
     def render(blueprint : Blueprint) {
       if (virtualNode == null) {
         virtualNode = createVirtualNode(domNode, 0, blueprint)
-        //domNode.appendChild(virtualNode.mountNode)
       } else 
         virtualNode = updateBlueprint(virtualNode.mountNode.activeElement, virtualNode, blueprint)
     }

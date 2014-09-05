@@ -57,7 +57,8 @@ object ALIGN extends CustomComponentClass {
     } else {
       if (max.isDefined) {
         val maximal = max.get
-        if (preferred <= maximal)
+        (preferred, 0)
+        /*if (preferred <= maximal)
           (preferred, 0)
         else {
           if (alignment < 0)
@@ -66,7 +67,7 @@ object ALIGN extends CustomComponentClass {
             (maximal, maximal - preferred)
           else 
             (maximal, (maximal - preferred) / 2)
-        }
+        }*/
       } else {
         (preferred, 0)
       } 
@@ -79,7 +80,7 @@ object ALIGN extends CustomComponentClass {
         case None => Dimensions.unknown
       }
     val valign = component.attributes.get(V) match {
-        case None => CENTER
+        case None => TOP
         case Some(v) => v
       }
     val halign = component.attributes.get(H) match {
@@ -93,7 +94,7 @@ object ALIGN extends CustomComponentClass {
     val (h, y) = align(dims.minimalHeight, dims.maximalHeight, childHeight, alignmentOf(valign))    
     val childAttrs = Dimensions.make(childWidth, childHeight, dims.pixelRatio).toAttributes +
       Dimensions.absoluteTopLeft(x, y)
-    DIV(component, STYLE -> ("width:"+w+"px;height:"+h+"px;overflow:hidden"))(
+    DIV(component, STYLE -> ("width:"+w+"px;height:"+h+"px"))(
       child + childAttrs
     )    
   }

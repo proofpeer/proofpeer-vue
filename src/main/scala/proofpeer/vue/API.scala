@@ -113,7 +113,9 @@ sealed abstract class ComponentClass {
         case eventName : Event.Name => 
           handlers = handlers + (eventName -> eventName.read(value).get)
         case _ => 
-          attributes = attributes + (name -> name.read(value).get)
+          val v = name.read(value)
+          ensure(v.isDefined, "attribute value for '"+name+"' is not defined")
+          attributes = attributes + (name -> v.get)
       }
     }
     createBlueprint(handlers, attributes, children)
