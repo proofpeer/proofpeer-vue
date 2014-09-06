@@ -50,5 +50,8 @@ package object dom {
   case object REF extends StringAttributeName("ref")
   case object TYPE extends StringAttributeName("type")
   case object SRC extends StringAttributeName("src")
+  case object ROWS extends IntAttributeName("rows")
+  case object SPELLCHECK extends StringAttributeName("spellcheck")
+
 
 }

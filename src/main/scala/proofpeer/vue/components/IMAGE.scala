@@ -7,7 +7,7 @@ object IMAGE extends CustomComponentClass {
 
   case class Source(url : String, width : Int, height : Int)
 
-  object SOURCES extends CustomAttributeName[List[Source]]("sources")
+  case object SOURCES extends CustomAttributeName[List[Source]]("sources")
 
   def render(parentNode : dom.Node, component : CustomComponent) : Blueprint = {
     val sources = component.attributes(SOURCES)

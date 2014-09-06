@@ -9,7 +9,7 @@ object SPAN_LAYOUT extends CustomComponentClass {
   case object AUTO extends WIDTH
   case class FIXED(width : Int) extends WIDTH
 
-  object WIDTHS extends CustomAttributeName[List[WIDTH]]("widths")
+  case object WIDTHS extends CustomAttributeName[List[WIDTH]]("widths")
 
   def render(parentNode : dom.Node, c : CustomComponent) : Blueprint = {
     var widths : List[Int] = List()

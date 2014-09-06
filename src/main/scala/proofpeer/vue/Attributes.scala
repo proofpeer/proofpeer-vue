@@ -32,6 +32,12 @@ trait Attributes {
   def toSeq : Seq[(AttributeName[Any], Any)]
   def get[T](attributeName : AttributeName[T]) : Option[T]
   def apply[T](attributeName : AttributeName[T]) : T = get(attributeName).get
+  def apply[T](attributeName : AttributeName[T], defaultValue : T) : T = {
+    get(attributeName) match {
+      case None => defaultValue
+      case Some(v) => v
+    }
+  }
   def +(attributes : (AttributeName[Any], Any)*) : Attributes
   def +(attributes : Attributes) : Attributes
   def *(attributes : (AttributeName[Any], Any)*) : Attributes

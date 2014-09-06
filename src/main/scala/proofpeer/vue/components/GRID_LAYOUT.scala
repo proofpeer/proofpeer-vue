@@ -220,9 +220,9 @@ object GRID_LAYOUT extends CustomComponentClass {
     includeLeftGutter : Boolean, includeRightGutter : Boolean,
     startBaseline : Baseline, endBaseline : Baseline)
 
-  object GRID extends CustomAttributeName[Grid]("grid")
-  object POSITIONS extends CustomAttributeName[List[Position]]("positions")
-  object SHOW_GRID extends CustomAttributeName[Boolean]("showgrid")
+  case object GRID extends CustomAttributeName[Grid]("grid")
+  case object POSITIONS extends CustomAttributeName[List[Position]]("positions")
+  case object SHOW_GRID extends CustomAttributeName[Boolean]("showgrid")
 
   private type Node = (Int, Boolean)
 
