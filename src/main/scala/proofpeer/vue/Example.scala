@@ -152,7 +152,7 @@ object Example {
         val grid = new GoldenGridSystem(dims.width.get, 18)
         val topelem = SHOW_DIMS(STYLE -> "background-color:blue")()
         val subelem = SHOW_DIMS(STYLE -> "background-color:red")()
-        val textelem = DIV(STYLE->"overflow:hidden")(text(lorem_ipsum))
+        val textelem = COPY(STYLE->"overflow:hidden")(text(lorem_ipsum))
         val numBaselines = dims.height.get / grid.baseline
         val b1 = Absolute(math.round(0.4 * numBaselines).asInstanceOf[Int])
         val b2 = Absolute(b1.baseline + 2)

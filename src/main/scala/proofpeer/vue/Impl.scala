@@ -356,7 +356,9 @@ object Impl {
       Some(
         eventName match {
           case Event.OnClick => "click"
-          case Event.OnSubmit => "submit"          
+          case Event.OnSubmit => "submit"  
+          case Event.OnInput => "input" 
+          case Event.OnChange => "change"                  
           case _ => return None
         })
     }
@@ -369,6 +371,10 @@ object Impl {
             new SyntheticEvent(Event.OnClick, null, nativeEvent)
           case "submit" => 
             new SyntheticEvent(Event.OnSubmit, null, nativeEvent)
+          case "input" =>
+            new SyntheticEvent(Event.OnInput, null, nativeEvent)
+          case "change" =>
+            new SyntheticEvent(Event.OnChange, null, nativeEvent)
           case _ => return None  
         })
     }

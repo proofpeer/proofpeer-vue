@@ -41,6 +41,7 @@ package object dom {
   val FORM = primitiveClass("form")
   val SPAN = primitiveClass("span")
   val IMG = primitiveClass("img")
+  val BUTTON = primitiveClass("button")
 
   // Attributes
 
@@ -51,7 +52,7 @@ package object dom {
   case object TYPE extends StringAttributeName("type")
   case object SRC extends StringAttributeName("src")
   case object ROWS extends IntAttributeName("rows")
-  case object SPELLCHECK extends StringAttributeName("spellcheck")
-
+  case object SPELLCHECK extends BoolAttributeName("spellcheck")
+  case object DISABLED extends BoolAttributeName("disabled")
 
 }

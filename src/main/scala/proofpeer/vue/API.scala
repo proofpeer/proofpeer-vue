@@ -5,6 +5,10 @@ trait Event {
   def info : Any
   def preventDefault()
   def stopPropagation()
+  def cancel() {
+    preventDefault()
+    stopPropagation()
+  }
 }
 
 object Event {
@@ -34,6 +38,8 @@ object Event {
   
   case object OnClick extends Name("Click")
   case object OnSubmit extends Name("Submit")
+  case object OnInput extends Name("Input")
+  case object OnChange extends Name("Change")
 
   def publishEvent(origin : Component, eventName : Event.Name, info : Any, performDefault : Event => Unit) {
     Impl.publishEvent(origin, eventName, info, performDefault)

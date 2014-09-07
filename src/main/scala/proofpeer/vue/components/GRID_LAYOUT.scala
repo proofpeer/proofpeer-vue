@@ -177,6 +177,16 @@ object GRID_LAYOUT extends CustomComponentClass {
     }
   }
 
+  case class MaxBaseline(offset : Int) extends BaselineComputation {
+    def apply(baselines : Array[Int]) : Int = {
+      var maxBaseline = 0
+      for (b <- baselines) {
+        if (b > maxBaseline) maxBaseline = b
+      }
+      maxBaseline + offset
+    }
+  }
+
   sealed trait Baseline 
 
   // This is an absolute reference to a specific baseline.
@@ -208,6 +218,11 @@ object GRID_LAYOUT extends CustomComponentClass {
     relative(-1, false, offset)
   }
 
+  def belowN(n : Int, offset : Int) : Baseline = {
+    val references = (-n to -1).map(i => BaselineReference(i, false)).toList
+    Relative(references, MaxBaseline(offset))
+  }
+  
   def heightBelow(height : Int) : Baseline = {
     relative(0, true, height-1)
   }
@@ -392,7 +407,7 @@ object GRID_LAYOUT extends CustomComponentClass {
     
     val innerStyle = "overflow:hidden;position:absolute;top:0px;left:0px;width:"+grid.width+"px;height:"+innerHeight+"px"
     val outerStyle = "overflow:scroll;width:"+width+"px;height:"+height+"px"
-    DIV(c, STYLE -> outerStyle)(
+    FORM(c, STYLE -> outerStyle)(
       DIV(STYLE -> innerStyle)(resultingChildren : _*)
     )
   }

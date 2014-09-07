@@ -17,15 +17,22 @@ object SPAN_LAYOUT extends CustomComponentClass {
     var children = c.children
     var positioned_children : List[Blueprint] = List()
     val dims = c.attributes(DIMS)
+    var max_height = 0
     for (w <- c.attributes(WIDTHS)) {
       val child = children.head
       val width = 
         w match {
-          case FIXED(width) => width
+          case FIXED(width) => 
+            val childDims = Dimensions(Some(width), dims.height, dims.pixelRatio, None, None,
+              dims.min_height, dims.max_height)
+            val (_, height) = RenderTarget.measure(parentNode, child + childDims.toAttributes)
+            if (height > max_height) max_height = height
+            width
           case AUTO =>
             val childDims = Dimensions(None, dims.height, dims.pixelRatio, None, None,
               dims.min_height, dims.max_height)
-            val (width, _) = RenderTarget.measure(parentNode, child + childDims.toAttributes)
+            val (width, height) = RenderTarget.measure(parentNode, child + childDims.toAttributes)
+            if (height > max_height) max_height = height
             width
         }
       val childDims = Dimensions(Some(width), dims.height, dims.pixelRatio, None, None,
@@ -35,7 +42,7 @@ object SPAN_LAYOUT extends CustomComponentClass {
       total_width = total_width + width
       children = children.tail
     }
-    DIV(c, STYLE -> ("width:"+total_width+"px;overflow:visible"))(
+    DIV(c, STYLE -> ("width:"+total_width+"px;height:"+max_height+"px;overflow:visible"))(
       positioned_children.reverse : _*
     )
   }

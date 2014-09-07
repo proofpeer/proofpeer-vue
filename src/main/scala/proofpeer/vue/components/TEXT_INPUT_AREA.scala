@@ -24,7 +24,7 @@ object TEXT_INPUT_AREA extends CustomComponentClass {
 
     // compute the style attribute
     val style = fontStyle + 
-      "margin:0;appearance:none;outline:none;box-shadow:none;border-radius:none;border:0;" +
+      "margin:0;appearance:none;outline:none;box-shadow:none;border-radius:none;" +
       "padding-left:"+padding+"px;padding-right:"+padding+"px;"+
       "border:solid "+border+"px "+borderColor+";"+
       "padding-top:"+(fontStyle.paddingTop - border)+"px;"+
@@ -34,7 +34,7 @@ object TEXT_INPUT_AREA extends CustomComponentClass {
       "resize:none;"
     
     // render it
-    TEXTAREA(c, STYLE -> style, SPELLCHECK -> "false")()
+    TEXTAREA(c, STYLE -> style, SPELLCHECK -> false)()
   }
 
 }

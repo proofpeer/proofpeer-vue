@@ -18,6 +18,8 @@ object TEXT_INPUT_LINE extends CustomComponentClass {
     }
   }
 
+  private val key = "input"
+
   def render(parentNode : dom.Node, c : CustomComponent) : Blueprint = {
     val cs = ConfigSheet()
     val fontStyle = c.attributes.get(FONT_STYLE) match {
@@ -52,7 +54,14 @@ object TEXT_INPUT_LINE extends CustomComponentClass {
       "height:"+(fontStyle.lineHeight)+"px;"
     
     // render it
-    INPUT(c, STYLE -> style, TYPE -> ty, SPELLCHECK -> "false")()
+    INPUT(c, KEY -> key, STYLE -> style, TYPE -> ty, SPELLCHECK -> false)()
   }
 
+  override def setState(component : CustomComponent, state : Any) { 
+    component(key).setState(state) 
+  }
+
+  override def getState(component : CustomComponent) : Any = { 
+    component(key).getState
+  }
 }

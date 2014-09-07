@@ -20,6 +20,16 @@ abstract class IntAttributeName(val name : String) extends AttributeName[Int] {
   }
 }  
 
+abstract class BoolAttributeName(val name : String) extends AttributeName[Boolean] {
+  def read(value : Any) = {
+    value match {
+      case b : Boolean => Some(b)
+      case _ => None
+    }
+  }
+}  
+
+
 abstract class CustomAttributeName[T](val name : String) extends AttributeName[T] {
   def read(value : Any) : Option[T] = {
     Some(value.asInstanceOf[T])
