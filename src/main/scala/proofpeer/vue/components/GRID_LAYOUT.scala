@@ -238,6 +238,7 @@ object GRID_LAYOUT extends CustomComponentClass {
   case object GRID extends CustomAttributeName[Grid]("grid")
   case object POSITIONS extends CustomAttributeName[List[Position]]("positions")
   case object SHOW_GRID extends CustomAttributeName[Boolean]("showgrid")
+  case object IS_FORM extends CustomAttributeName[Boolean]("isform")
 
   private type Node = (Int, Boolean)
 
@@ -407,9 +408,16 @@ object GRID_LAYOUT extends CustomComponentClass {
     
     val innerStyle = "overflow:hidden;position:absolute;top:0px;left:0px;width:"+grid.width+"px;height:"+innerHeight+"px"
     val outerStyle = "overflow:scroll;width:"+width+"px;height:"+height+"px"
-    FORM(c, STYLE -> outerStyle)(
-      DIV(STYLE -> innerStyle)(resultingChildren : _*)
-    )
+    
+    if (c.attributes(IS_FORM, false)) {
+      FORM(c, STYLE -> outerStyle)(
+        DIV(STYLE -> innerStyle)(resultingChildren : _*)
+      )
+    } else {
+      DIV(c, STYLE -> outerStyle)(
+        DIV(STYLE -> innerStyle)(resultingChildren : _*)
+      )
+    }
   }
 
 }
