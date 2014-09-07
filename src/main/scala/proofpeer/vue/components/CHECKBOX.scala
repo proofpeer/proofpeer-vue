@@ -5,6 +5,8 @@ import proofpeer.vue.dom._
 
 object CHECKBOX extends CustomComponentClass {
 
+  private val key = "checkbox"
+
   def render(parentNode : dom.Node, c : CustomComponent) : Blueprint = {
     val cs = ConfigSheet()
     val fontStyle = c.attributes.get(FONT_STYLE) match {
@@ -29,12 +31,21 @@ object CHECKBOX extends CustomComponentClass {
 
     // render it
     SPAN_LAYOUT(c, WIDTHS -> List(FIXED(checkboxWidth), FIXED(cs.gutterWidth), width))(
-      INPUT(STYLE->style, TYPE -> "checkbox")(),
+      INPUT(STYLE->style, KEY->key, TYPE -> "checkbox")(),
       DIV()(),
       COPY(FONT_STYLE -> fontStyle)(
         c.children : _*
       )
     )
   }
+
+  override def setState(component : CustomComponent, state : Any) { 
+    val on : Boolean = state.asInstanceOf[Boolean]
+    component(key).mountNode().checked = on
+  }
+
+  override def getState(component : CustomComponent) : Any = { 
+    component(key).mountNode().checked.asInstanceOf[Boolean]
+  }  
 
 }

@@ -5,6 +5,8 @@ import proofpeer.vue.dom._
 
 object TEXT_INPUT_AREA extends CustomComponentClass {
 
+  private val key = "textarea"
+
   def render(parentNode : dom.Node, c : CustomComponent) : Blueprint = {
     val cs = ConfigSheet()
     val fontStyle = c.attributes(FONT_STYLE, cs.bodyStyle)
@@ -34,7 +36,16 @@ object TEXT_INPUT_AREA extends CustomComponentClass {
       "resize:none;"
     
     // render it
-    TEXTAREA(c, STYLE -> style, SPELLCHECK -> false)()
+    TEXTAREA(c, KEY -> key, STYLE -> style, SPELLCHECK -> false)()
   }
+
+  override def setState(component : CustomComponent, state : Any) { 
+    component(key).setState(state) 
+  }
+
+  override def getState(component : CustomComponent) : Any = { 
+    component(key).getState
+  }
+
 
 }
