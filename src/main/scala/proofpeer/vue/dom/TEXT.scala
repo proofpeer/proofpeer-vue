@@ -48,7 +48,7 @@ object RAW_HTML extends PrimitiveComponentClass {
       val value = attrName.toString(attrValue)
       if (value != null) elem.setAttribute(attrName.name, value)
     }
-    elem.innerHTML = component.attributes(VALUE)
+    elem.innerHTML = blueprint.attributes(VALUE)
   }
   def make(value : String) : Blueprint = RAW_HTML(VALUE -> value)()
 

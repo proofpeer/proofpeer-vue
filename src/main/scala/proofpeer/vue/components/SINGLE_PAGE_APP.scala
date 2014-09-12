@@ -19,10 +19,6 @@ object SINGLE_PAGE_APP extends CustomComponentClass {
     val f : (js.Dynamic) => Unit = event => {
       val location = document().location.href.asInstanceOf[String]
       c.setLocalState(State(location, grabDimensions))
-      val (page, hash) = location.lastIndexOf("#") match {
-        case -1 => (location, "")
-        case i => (location.substring(0, i), location.substring(i+1))
-      }   
     }
     window().onpopstate = f
     document().location.href.asInstanceOf[String]
