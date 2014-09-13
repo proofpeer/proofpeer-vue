@@ -378,7 +378,7 @@ object GRID_LAYOUT extends CustomComponentClass {
     }
 
     val innerHeight = numBaselines * grid.baseline
-    var height = innerHeight
+    /*var height = innerHeight
     if (height < dims.minimalHeight) height = dims.minimalHeight
     dims.maximalHeight match {
       case None =>
@@ -390,7 +390,7 @@ object GRID_LAYOUT extends CustomComponentClass {
       case None =>
       case Some(w) =>
         if (w < width) width = w
-    }
+    }*/
 
     var resultingChildren = result.reverse
 
@@ -407,7 +407,7 @@ object GRID_LAYOUT extends CustomComponentClass {
     }
     
     val innerStyle = "overflow:hidden;position:absolute;top:0px;left:0px;width:"+grid.width+"px;height:"+innerHeight+"px"
-    val outerStyle = "overflow:scroll;width:"+width+"px;height:"+height+"px"
+    val outerStyle = "overflow:hidden;width:"+grid.width+"px;height:"+innerHeight+"px"
     
     if (c.attributes(IS_FORM, false)) {
       FORM(c, STYLE -> outerStyle)(

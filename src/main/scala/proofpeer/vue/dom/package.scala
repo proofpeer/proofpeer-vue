@@ -29,6 +29,23 @@ package object dom {
     window().clearTimeout(intervalId)
   }  
 
+  def getScrollbarWidth() : Int = {
+    val outer = document().createElement("div")
+    outer.style.visibility = "hidden"
+    outer.style.width = "100px"
+    outer.style.msOverflowStyle = "scrollbar" // needed for WinJS apps
+    document().body.appendChild(outer)
+    val widthNoScroll = outer.offsetWidth
+    outer.style.overflow = "scroll"
+    val inner = document().createElement("div")
+    inner.style.width = "100%"
+    outer.appendChild(inner)       
+    val widthWithScroll = inner.offsetWidth
+    outer.parentNode.removeChild(outer)
+    return (widthNoScroll - widthWithScroll).asInstanceOf[Int]
+  }
+
+
   private def primitiveClass(name : String) : PrimitiveComponentClass = 
     new DefaultPrimitiveComponent(name)
 
