@@ -11,9 +11,11 @@ case class FontStyle(
   val weight : String
 ) {
   
-  override def toString : String = 
+  override def toString : String = asStyle+"padding-top:"+paddingTop+"px;" 
+
+  def asStyle : String =  
     "font-family:"+family+";font-size:"+size+"px;line-height:"+lineHeight+"px;"+
-    "padding-top:"+paddingTop+"px;font-style:"+style+";font-weight:"+weight+";"  
+    "font-style:"+style+";font-weight:"+weight+";" 
   
   val asAttribute : Any = proofpeer.vue.dom.STYLE.read(this.toString)
 }
