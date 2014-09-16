@@ -75,6 +75,14 @@ object Dimensions {
 
   val unknown : Dimensions = Dimensions(None, None, None, None, None, None, None)
 
+  def window : Dimensions = {
+    import dom.{window => w}
+    val pageWidth = w().innerWidth.asInstanceOf[Int]
+    val pageHeight = w().innerHeight.asInstanceOf[Int]
+    val pixelRatio = w().devicePixelRatio.asInstanceOf[Double]
+    Dimensions.make(pageWidth, pageHeight, pixelRatio)    
+  }
+
 }
 
 case object DIMS extends CustomAttributeName[Dimensions]("dims")

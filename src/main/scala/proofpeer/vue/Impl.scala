@@ -19,6 +19,13 @@ object Impl {
       val h = this.height - that.height
       if (h == 0) this.id - that.id else h
     }
+    override def equals(that : Any) : Boolean = {
+      that match {
+        case v : VirtualNode => compare(v) == 0
+        case _ => false
+      }
+    }
+    override def hashCode : Int = { List(height, id).hashCode() }
     def executeStateChange(s : Any)
     def lookup(key : Any) : Option[Component] = {
       for (c <- subComponents) {
@@ -339,7 +346,7 @@ object Impl {
           eventHandlers = eventHandlers + (eventName -> m)
         }
       }
-      for (eventName <- newEventNames -- oldEventNames) {
+      for (eventName <- newEventNames) {
         eventHandlers.get(eventName) match {
           case None =>
             val m = Map(virtualNode -> newHandlers(eventName))
@@ -408,7 +415,7 @@ object Impl {
     }
 
     def processEvent(event : SyntheticEvent, defaultAction : Option[Event => Unit], target : Node) {
-      val m = eventHandlers(event.eventName)
+      val m : Map[VirtualNode, Event.Handler] = eventHandlers(event.eventName)
       var hits : List[(VirtualNode, Event.Handler)] = List()
       for ((virtualNode, handler) <- m) {
         if (virtualNode.mountNode.contains(target)) {
@@ -457,7 +464,7 @@ object Impl {
         case None =>
           println("warning: no native event found for: "+eventName)
         case Some(nativeName) =>
-          js.Dynamic.global.document.removeEventListener(nativeName, listener)
+          js.Dynamic.global.document.removeEventListener(nativeName, listener, true)
       }
     }
 
