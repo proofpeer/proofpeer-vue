@@ -28,7 +28,9 @@ case class ConfigSheet(
   val leadStyle : FontStyle,
   val supertitleStyle : FontStyle,
   val titleStyle : FontStyle,
-  val subtitleStyle : FontStyle 
+  val subtitleStyle : FontStyle,
+  val menubarNormalStyle : FontStyle,
+  val menubarSelectedStyle : FontStyle 
 ) 
 
 object ConfigSheet {
@@ -43,7 +45,9 @@ object ConfigSheet {
       FontStyle(ff, 20, 24, 0, "normal", "normal"),
       FontStyle(ff, 60, 72, 0, "normal", "bold"),
       FontStyle(ff, 40, 48, 0, "normal", "bold"),
-      FontStyle(ff, 32, 48, 0, "normal", "bold")    
+      FontStyle(ff, 32, 48, 0, "normal", "bold"),
+      FontStyle(ff, 30, 48, 0, "normal", "normal"),
+      FontStyle(ff, 40, 48, 0, "normal", "normal")    
     )
 
   private var applicationConfigSheet : ConfigSheet = defaultConfigSheet
@@ -84,7 +88,9 @@ object FontStyle {
     isInitialized(cs.leadStyle) &&
     isInitialized(cs.supertitleStyle) &&
     isInitialized(cs.titleStyle) &&
-    isInitialized(cs.subtitleStyle)
+    isInitialized(cs.subtitleStyle) &&
+    isInitialized(cs.menubarSelectedStyle) &&
+    isInitialized(cs.menubarNormalStyle)
   }  
 }
 

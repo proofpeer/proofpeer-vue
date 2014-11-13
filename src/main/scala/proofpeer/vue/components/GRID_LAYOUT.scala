@@ -395,7 +395,7 @@ object GRID_LAYOUT extends CustomComponentClass {
     var resultingChildren = result.reverse
 
     // optionally visualize the grid
-    val showgrid =
+    val showgrid = 
       c.attributes.get(SHOW_GRID) match {
         case None => false
         case Some(b) => b

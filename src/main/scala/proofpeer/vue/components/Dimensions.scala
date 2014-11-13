@@ -65,12 +65,21 @@ object Dimensions {
     Attributes(STYLE -> style)
   }
 
+  def absoluteTopRight(right : Int, top : Int) : Attributes = {
+    val style = "position:absolute;right:"+right+"px;top:"+top+"px"
+    Attributes(STYLE -> style)
+  }
+
   def make(width : Int, height : Int, pixelRatio : Double) : Dimensions = {
     Dimensions(Some(width), Some(height), Some(pixelRatio), None, None, None, None)
   }
 
   def make(width : Int, height : Int, pixelRatio : Option[Double]) : Dimensions = {
     Dimensions(Some(width), Some(height), pixelRatio, None, None, None, None)
+  }
+
+  def make(width : Option[Int], height : Option[Int], pixelRatio : Option[Double]) : Dimensions = {
+    Dimensions(width, height, pixelRatio, None, None, None, None)
   }
 
   val unknown : Dimensions = Dimensions(None, None, None, None, None, None, None)
