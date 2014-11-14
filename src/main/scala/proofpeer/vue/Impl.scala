@@ -12,7 +12,10 @@ object Impl {
     nextVirtualNodeId = nextVirtualNodeId + 1
     var blueprint : Blueprint = null
     var mountNode : dom.Node = null
+    private var hasStartedUnmounting : Boolean = false
+    def hasUnmounted : Boolean = hasStartedUnmounting
     def willUnmount() {
+      hasStartedUnmounting = true
       EventHandling.updateHandlers(this, blueprint.eventHandlers, Event.NoHandlers)
     }
     def compare(that : VirtualNode) : Int = {

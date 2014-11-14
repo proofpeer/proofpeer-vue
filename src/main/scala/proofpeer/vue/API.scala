@@ -146,6 +146,7 @@ trait Component {
   def getState[T] : T
   def setState(state : Any)
   def mountNode : dom.Node
+  def hasUnmounted : Boolean 
   def subComponents : Seq[Component]
   def lookup(key : Any) : Option[Component]
   def apply(key : Any) : Component = lookup(key).get
