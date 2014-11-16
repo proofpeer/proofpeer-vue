@@ -45,7 +45,6 @@ package object dom {
     return (widthNoScroll - widthWithScroll).asInstanceOf[Int]
   }
 
-
   private def primitiveClass(name : String) : PrimitiveComponentClass = 
     new DefaultPrimitiveComponent(name)
 
