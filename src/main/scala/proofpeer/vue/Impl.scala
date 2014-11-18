@@ -3,7 +3,7 @@ package proofpeer.vue
 import scala.collection.immutable.SortedMap
 import dom.Node
 
-object Impl {
+object Impl {  
 
   private var nextVirtualNodeId : Int = 0
 
@@ -135,9 +135,6 @@ object Impl {
     vnode.mountNode = primitiveClass.render(parentNode, vnode)
     parentNode.appendChild(vnode.mountNode)
     val children = blueprint.children.map(c => createVirtualNode(vnode.mountNode, height + 1, c))
-    /*for (child <- children) {
-      vnode.mountNode.appendChild(child.mountNode)
-    }*/
     vnode.childNodes = children
     EventHandling.updateHandlers(vnode, Event.NoHandlers, blueprint.eventHandlers)   
     primitiveClass.didMount(vnode) 
@@ -478,19 +475,28 @@ object Impl {
     var virtualNode : VirtualNode = null
 
     def render(blueprint : Blueprint) {
-      if (virtualNode == null) {
-        virtualNode = createVirtualNode(domNode, 0, blueprint)
-      } else 
-        virtualNode = updateBlueprint(virtualNode.mountNode.activeElement, virtualNode, blueprint)
+      if (domNode != null && domNode.isInDom) {
+        if (virtualNode == null) 
+          virtualNode = createVirtualNode(domNode, 0, blueprint)
+        else 
+          virtualNode = updateBlueprint(virtualNode.mountNode.activeElement, virtualNode, blueprint)
+      } else {
+        println("trying to render into invalid dom node")
+      }
     }
 
     def measure(_blueprint : Blueprint) : (Int, Int) = {
-      val blueprint = _blueprint + (dom.STYLE -> "visibility:hidden;position:absolute;display:block")
-      val vn = createVirtualNode(domNode, 0, blueprint)
-      val w = vn.mountNode().offsetWidth.asInstanceOf[Int]
-      val h = vn.mountNode().offsetHeight.asInstanceOf[Int]
-      domNode.removeChild(vn.mountNode)
-      (w, h)
+      if (domNode != null && domNode.isInDom) {
+        val blueprint = _blueprint + (dom.STYLE -> "visibility:hidden;position:absolute;display:block")
+        val vn = createVirtualNode(domNode, 0, blueprint)
+        val w = vn.mountNode().offsetWidth.asInstanceOf[Int]
+        val h = vn.mountNode().offsetHeight.asInstanceOf[Int]
+        domNode.removeChild(vn.mountNode)
+        (w, h)
+      } else {
+        println("trying to measure in invalid dom node")
+        (0,0)
+      }
     }
 
   }
