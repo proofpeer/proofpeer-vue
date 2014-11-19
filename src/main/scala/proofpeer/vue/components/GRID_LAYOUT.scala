@@ -233,7 +233,7 @@ object GRID_LAYOUT extends CustomComponentClass {
 
   case class Position(startUnit : Int, endUnit : Int,
     includeLeftGutter : Boolean, includeRightGutter : Boolean,
-    startBaseline : Baseline, endBaseline : Baseline)
+    startBaseline : Baseline, endBaseline : Baseline, floating : Option[(Int, Int)] = None)
 
   case object GRID extends CustomAttributeName[Grid]("grid")
   case object POSITIONS extends CustomAttributeName[List[Position]]("positions")
@@ -363,7 +363,12 @@ object GRID_LAYOUT extends CustomComponentClass {
       val (x, w) = grid.unitExtent(position.startUnit, position.endUnit,
         position.includeLeftGutter, position.includeRightGutter)
       val attrs : Attributes = 
-        if (isAutomatic(position.startBaseline) || isAutomatic(position.endBaseline)) {
+        if (position.floating.isDefined) {
+          val y = grid.baseline * startBaselines(index)
+          val (deltax, deltay) = position.floating.get
+          Dimensions.make(None, None, dims.pixelRatio).toAttributes + 
+            Dimensions.absoluteTopLeft(x + deltax, y + deltay)
+        } else if (isAutomatic(position.startBaseline) || isAutomatic(position.endBaseline)) {
           val d = Dimensions(Some(w), None, dims.pixelRatio, None, None, None, None)
           val y1 = grid.baseline * startBaselines(index)
           d.toAttributes + Dimensions.absoluteTopLeft(x, y1)       
@@ -378,19 +383,6 @@ object GRID_LAYOUT extends CustomComponentClass {
     }
 
     val innerHeight = numBaselines * grid.baseline
-    /*var height = innerHeight
-    if (height < dims.minimalHeight) height = dims.minimalHeight
-    dims.maximalHeight match {
-      case None =>
-      case Some(h) => if (height > h) height = h
-    }
-
-    var width = grid.width
-    dims.maximalWidth match {
-      case None =>
-      case Some(w) =>
-        if (w < width) width = w
-    }*/
 
     var resultingChildren = result.reverse
 
