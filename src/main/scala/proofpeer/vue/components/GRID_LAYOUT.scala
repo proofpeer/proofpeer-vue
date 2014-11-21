@@ -310,7 +310,7 @@ object GRID_LAYOUT extends CustomComponentClass {
     var numBaselines = 0
     for ((index, start) <- componentOrder) {
       def store(baseline : Int) {
-        ensure(baseline >= 0, "baseline must be non-negative")
+        //ensure(baseline >= 0, "baseline must be non-negative")
         if (start) 
           startBaselines(index) = baseline
         else
