@@ -365,7 +365,10 @@ object Impl {
           case Event.OnClick => "click"
           case Event.OnSubmit => "submit"  
           case Event.OnInput => "input" 
-          case Event.OnChange => "change"                  
+          case Event.OnChange => "change"
+          case Event.OnMouseOver => "mouseover"
+          case Event.OnMouseEnter => "mouseenter"
+          case Event.OnMouseLeave => "mouseleave"                  
           case _ => return None
         })
     }
@@ -382,11 +385,17 @@ object Impl {
             new SyntheticEvent(Event.OnInput, null, nativeEvent)
           case "change" =>
             new SyntheticEvent(Event.OnChange, null, nativeEvent)
+          case "mouseover" =>
+            new SyntheticEvent(Event.OnMouseOver, null, nativeEvent, true)
+          case "mouseenter" =>
+            new SyntheticEvent(Event.OnMouseEnter, null, nativeEvent, true)
+          case "mouseleave" =>
+            new SyntheticEvent(Event.OnMouseLeave, null, nativeEvent, true)
           case _ => return None  
         })
     }
 
-    class SyntheticEvent(val eventName : Event.Name, val info : Any, nativeEvent : js.Dynamic) extends Event 
+    class SyntheticEvent(val eventName : Event.Name, val info : Any, nativeEvent : js.Dynamic, val isExact : Boolean = false) extends Event 
     {
       var cancelled : Boolean = nativeEvent.defaultPrevented.asInstanceOf[Boolean]
 
@@ -418,7 +427,7 @@ object Impl {
       val m : Map[VirtualNode, Event.Handler] = eventHandlers(event.eventName)
       var hits : List[(VirtualNode, Event.Handler)] = List()
       for ((virtualNode, handler) <- m) {
-        if (virtualNode.mountNode.contains(target)) {
+        if (virtualNode.mountNode.contains(target) && (!event.isExact || target.contains(virtualNode.mountNode))) {
           hits = (virtualNode, handler) :: hits
         }
       }

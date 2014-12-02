@@ -16,7 +16,7 @@ object PUSH_BUTTON extends CustomComponentClass {
     def borderColor : String
     def asStyle(hover : Boolean) : String = {
       val bgColor = if (hover) hoverBackgroundColor else backgroundColor
-      "margin:0;appearance:none;outline:none;box-shadow:none;border-radius:none;" +
+      "cursor:pointer;margin:0;appearance:none;outline:none;box-shadow:none;border-radius:none;" +
       "border:solid "+border+"px "+borderColor+";"+
       "background-color:"+bgColor +";color:"+textColor+";"
     }

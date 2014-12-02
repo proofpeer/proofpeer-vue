@@ -37,6 +37,9 @@ object Event {
   }
   
   case object OnClick extends Name("Click")
+  case object OnMouseOver extends Name("MouseOver")
+  case object OnMouseEnter extends Name("MouseEnter")
+  case object OnMouseLeave extends Name("MouseLeave")
   case object OnSubmit extends Name("Submit")
   case object OnInput extends Name("Input")
   case object OnChange extends Name("Change")
