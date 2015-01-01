@@ -25,6 +25,8 @@ package object dom {
     window().setTimeout(f, millis).asInstanceOf[Int]
   }
 
+  def runLater(f : () => Unit) : Int = setTimeout(f, 0)
+
   def clearTimeout(intervalId : Int) {
     window().clearTimeout(intervalId)
   }  
