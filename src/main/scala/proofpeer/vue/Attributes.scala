@@ -29,7 +29,6 @@ abstract class BoolAttributeName(val name : String) extends AttributeName[Boolea
   }
 }  
 
-
 abstract class CustomAttributeName[T](val name : String) extends AttributeName[T] {
   def read(value : Any) : Option[T] = {
     Some(value.asInstanceOf[T])

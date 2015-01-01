@@ -64,6 +64,7 @@ object Impl {
   private class CustomVirtualNode(h : Int) extends VirtualNode(h) with CustomComponent {
     var representation : VirtualNode = null
     var _localState : Any = null
+    var _prevLocalState : Option[Any] = None
     def customClass : CustomComponentClass = 
       blueprint.componentClass.asInstanceOf[CustomComponentClass]
     override def willUnmount() {
@@ -74,8 +75,16 @@ object Impl {
     def getState[T] : T = customClass.getState(this).asInstanceOf[T]
     def setState(s : Any) { customClass.setState(this, s) }
     def getLocalState() : Any = _localState
-    def setLocalState(s : Any) { scheduleStateUpdate(this, s) }
-    def executeStateChange(s : Any) { updateState(this, s) }
+    def setLocalState(s : Any) { 
+      if (!_prevLocalState.isDefined)
+        _prevLocalState = Some(_localState)
+      _localState = s
+      scheduleStateUpdate(this, s) 
+    }
+    def executeStateChange(s : Any) { 
+      updateState(this, s) 
+      _prevLocalState = None
+    }
     def subComponents = Seq(representation)
   }
 
@@ -147,13 +156,11 @@ object Impl {
     val vnode = new CustomVirtualNode(height)
     vnode.blueprint = blueprint
     customClass.componentWillMount(vnode)
-    val optState = consumeStateUpdate(vnode)
-    if (optState.isDefined) vnode._localState = optState.get
+    consumeStateUpdate(vnode)
     val representingBlueprint = customClass.render(parentNode, vnode)
     vnode.representation = createVirtualNode(parentNode, height + 1, representingBlueprint)
     vnode.mountNode = vnode.representation.mountNode
     EventHandling.updateHandlers(vnode, Event.NoHandlers, blueprint.eventHandlers)
-    //parentNode.appendChild(vnode.mountNode)
     customClass.componentDidMount(vnode)
     return vnode
   }
@@ -172,16 +179,16 @@ object Impl {
   }
 
   private def updateState(customNode : CustomVirtualNode, state : Any) {
-    if (customNode._localState == state) return
-    val oldState = customNode._localState
+    if (customNode._prevLocalState == Some(state)) return
+    val oldstate = customNode._prevLocalState.get
     val cl = customNode.customClass
-    cl.componentWillUpdate(customNode, state)
+    cl.componentWillUpdate(customNode, oldstate)
     customNode._localState = state
     val newRepBlueprint = cl.render(customNode.mountNode.parentNode, customNode)
     val activeElement = customNode.mountNode.activeElement
     customNode.representation = updateBlueprint(activeElement, customNode.representation, newRepBlueprint)
     customNode.mountNode = customNode.representation.mountNode
-    cl.componentDidUpdate(customNode, oldState)
+    cl.componentDidUpdate(customNode, oldstate)
   }
 
   private class OrderedVirtualNode(
@@ -303,13 +310,8 @@ object Impl {
             primitiveNode.mountNode, blueprint.children, primitiveNode.childNodes)
         case customNode : CustomVirtualNode =>
           val cl = customNode.customClass
-          var optState = consumeStateUpdate(customNode)
-          cl.componentWillReceiveBlueprint(customNode, blueprint, optState)
-          consumeStateUpdate(customNode) match {
-            case None =>
-            case s => optState = s
-          }
-          if (optState.isDefined) customNode._localState = optState.get
+          consumeStateUpdate(customNode)
+          cl.componentWillReceiveBlueprint(customNode, blueprint)
           customNode.blueprint = blueprint
           val newRepBlueprint = customNode.customClass.render(customNode.mountNode.parentNode, customNode)
           customNode.representation = updateBlueprint(activeElement, customNode.representation, newRepBlueprint)

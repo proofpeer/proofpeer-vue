@@ -182,11 +182,11 @@ abstract class CustomComponentClass extends ComponentClass {
   def componentWillMount(component : CustomComponent) {}
   def componentDidMount(component : CustomComponent) {} 
   def componentWillUnmount(component : CustomComponent) {}
-  def componentWillUpdate(component : CustomComponent, nextLocalState : Any) {}
+  def componentWillUpdate(component : CustomComponent, prevLocalState : Any) {}
   def componentDidUpdate(component : CustomComponent, prevLocalState : Any) {}
   def setState(component : CustomComponent, state : Any) { component.setLocalState(state) }
   def getState(component : CustomComponent) : Any = { component.getLocalState() }
-  def componentWillReceiveBlueprint(component : CustomComponent, nextBlueprint : Blueprint, newLocalState : Option[Any]) {}
+  def componentWillReceiveBlueprint(component : CustomComponent, nextBlueprint : Blueprint) {}
 }
 
 trait RenderTarget {
