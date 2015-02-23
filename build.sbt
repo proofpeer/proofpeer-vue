@@ -1,12 +1,10 @@
-import ScalaJSKeys._
-
-scalaJSSettings
+enablePlugins(ScalaJSPlugin)
 
 organization := "net.proofpeer"
 
 name := "ProofPeer Vue"
 
-scalaVersion := "2.11.1"
+scalaVersion := "2.11.5"
 
 version := "0.1-SNAPSHOT"
 
