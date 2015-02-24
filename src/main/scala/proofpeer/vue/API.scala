@@ -43,6 +43,15 @@ object Event {
   case object OnSubmit extends Name("Submit")
   case object OnInput extends Name("Input")
   case object OnChange extends Name("Change")
+  case object OnKeyDown extends Name("KeyDown") 
+  case object OnKeyUp extends Name("KeyUp")
+  case object OnKeyPress extends Name("KeyPress")
+
+  trait KeyInfo {
+    def key : String
+    def keyCode : Int
+    def chars : String
+  }
 
   def publishEvent(origin : Component, eventName : Event.Name, info : Any, performDefault : Event => Unit) {
     Impl.publishEvent(origin, eventName, info, performDefault)

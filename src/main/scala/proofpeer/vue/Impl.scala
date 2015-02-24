@@ -370,10 +370,142 @@ object Impl {
           case Event.OnChange => "change"
           case Event.OnMouseOver => "mouseover"
           case Event.OnMouseEnter => "mouseenter"
-          case Event.OnMouseLeave => "mouseleave"                  
+          case Event.OnMouseLeave => "mouseleave"   
+          case Event.OnKeyPress => "keypress"
+          case Event.OnKeyDown => "keydown"
+          case Event.OnKeyUp => "keyup"               
           case _ => return None
         })
     }
+
+    final class KeyInfo(val key : String, val keyCode : Int, val chars : String) extends Event.KeyInfo {
+      override def toString : String = "KeyInfo(key="+key+",keyCode="+keyCode+",chars='"+chars+"')"
+    }
+
+    /** Currently just Windows, see: https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent/key#Key_values */
+    def keyValue(code : Int) : String = {
+      code match {
+        case 0x03 => "Cancel"
+        case 0x08 => "Backspace"
+        case 0x09 => "Tab"
+        case 0x0C => "Clear"
+        case 0x0D => "Enter"
+        case 0x10 => "Shift"
+        case 0x11 => "Control"
+        case 0x12 => "Alt"
+        case 0x13 => "Pause"
+        case 0x14 => "CapsLock"
+        case 0x1B => "Escape"
+        case 0x1C => "Convert"
+        case 0x1D => "NonConvert"
+        case 0x1E => "Accept"
+        case 0x1F => "ModeChange"
+        case 0x20 => " "
+        case 0x21 => "PageUp"
+        case 0x22 => "PageDown"
+        case 0x23 => "End"
+        case 0x24 => "Home"
+        case 0x25 => "ArrowLeft"
+        case 0x26 => "ArrowUp"
+        case 0x27 => "ArrowRight"
+        case 0x28 => "ArrowDown"
+        case 0x29 => "Select"
+        case 0x2B => "Execute"
+        case 0x2C => "PrintScreen"
+        case 0x2D => "Insert"
+        case 0x2E => "Delete"
+        case 0x2F => "Help"
+        case 0x5B => "OS"
+        case 0x5C => "OS"
+        case 0x5D => "ContextMenu"
+        case 0x5F => "Standby"
+        case 0x60 => "0"
+        case 0x61 => "1"
+        case 0x62 => "2"
+        case 0x63 => "3"
+        case 0x64 => "4"
+        case 0x65 => "5"
+        case 0x66 => "6"
+        case 0x67 => "7"
+        case 0x68 => "8"
+        case 0x69 => "9"
+        case 0x6A => "*"
+        case 0x6B => "+"
+        case 0x6C => "Separator"
+        case 0x6D => "-"
+        case 0x6E => "."
+        case 0x6F => "/"
+        case 0x70 => "F1"
+        case 0x71 => "F2"
+        case 0x72 => "F3"
+        case 0x73 => "F4"
+        case 0x74 => "F5"
+        case 0x75 => "F6"
+        case 0x76 => "F7"
+        case 0x77 => "F8"
+        case 0x78 => "F9"
+        case 0x79 => "F10"
+        case 0x7A => "F11"
+        case 0x7B => "F12"
+        case 0x7C => "F13"
+        case 0x7D => "F14"
+        case 0x7E => "F15"
+        case 0x7F => "F16"
+        case 0x80 => "F17"
+        case 0x81 => "F18"
+        case 0x82 => "F19"
+        case 0x83 => "F20"
+        case 0x84 => "F21"
+        case 0x85 => "F22"
+        case 0x86 => "F23"
+        case 0x87 => "F24"
+        case 0x90 => "NumLock"
+        case 0x91 => "ScrollLock"
+        case 0xA0 => "Shift"
+        case 0xA1 => "Shift"
+        case 0xA2 => "Control"
+        case 0xA3 => "Control"
+        case 0xA4 => "Alt"
+        case 0xA5 => "Alt"
+        case 0xA6 => "BrowserBack"
+        case 0xA7 => "BrowserForward"
+        case 0xA8 => "BrowserRefresh"
+        case 0xA9 => "BrowserStop"
+        case 0xAA => "BrowserSearch"
+        case 0xAB => "BrowserFavorites"
+        case 0xAC => "BrowserHome"
+        case 0xAD => "VolumeMute"
+        case 0xAE => "VolumeDown"
+        case 0xAF => "VolumeUp"
+        case 0xB0 => "MediaTrackNext"
+        case 0xB1 => "MediaTrackPrevious"
+        case 0xB2 => "MediaStop"
+        case 0xB3 => "MediaPlayPause"
+        case 0xB4 => "LaunchMail"
+        case 0xB5 => "MediaSelect"
+        case 0xB6 => "LaunchApplication1"
+        case 0xB7 => "LaunchApplication2"
+        case 0xF7 => "CrSel"
+        case 0xF8 => "ExSel"
+        case 0xF9 => "EraseOf"
+        case 0xFA => "Play"
+        case 0xFB => "ZoomToggle"
+        case 0xFE => "Clear"
+        case _ => "Unidentified"
+      }
+    }
+
+    def keyChangeInfo(event : js.Dynamic) : Event.KeyInfo = {
+      val keyCode : Int = event.keyCode.asInstanceOf[Int]
+      val key : String = keyValue(keyCode)
+      new KeyInfo(key, keyCode, "")
+    }
+
+    def keyPressInfo(event : js.Dynamic) : Event.KeyInfo = {
+      val k = event.charCode.asInstanceOf[Int]
+      new KeyInfo("", k, k.toChar.toString)
+    }
+
 
     def syntheticEvent(nativeEvent : js.Dynamic) : Option[SyntheticEvent] = {
       val nativeName : String = nativeEvent.`type`.asInstanceOf[String]
@@ -393,6 +525,12 @@ object Impl {
             new SyntheticEvent(Event.OnMouseEnter, null, nativeEvent, true)
           case "mouseleave" =>
             new SyntheticEvent(Event.OnMouseLeave, null, nativeEvent, true)
+          case "keydown" =>
+            new SyntheticEvent(Event.OnKeyDown, keyChangeInfo(nativeEvent), nativeEvent)
+          case "keypress" =>
+            new SyntheticEvent(Event.OnKeyPress, keyPressInfo(nativeEvent), nativeEvent)
+          case "keyup" =>
+            new SyntheticEvent(Event.OnKeyUp, keyChangeInfo(nativeEvent), nativeEvent)
           case _ => return None  
         })
     }
