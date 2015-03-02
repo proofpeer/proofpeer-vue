@@ -17,14 +17,17 @@ object PUSH_BUTTON extends CustomComponentClass {
     def asStyle(hover : Boolean) : String = {
       val bgColor = if (hover) hoverBackgroundColor else backgroundColor
       "cursor:pointer;margin:0;appearance:none;outline:none;box-shadow:none;border-radius:none;" +
-      "border:solid "+border+"px "+borderColor+";"+
+      "border:solid "+border+"px "+borderColor+";text-decoration:none;"+
       "background-color:"+bgColor +";color:"+textColor+";"
     }
     def cssClass : String
     def register() {
-      val normalRule = "." + cssClass + "{" + asStyle(false) + "}"
+      val style = asStyle(false)
+      val normalRule = "." + cssClass + "{" + style + "}"
+      val linkRule = "." + cssClass + ":link{" + style + "}"
+      val visitedRule = "." + cssClass + ":visited{" + style + "}"
       val hoverRule = "." + cssClass + ":hover{" + asStyle(true) + "}"
-      Styling.addRules(normalRule, hoverRule)
+      Styling.addRules(normalRule, linkRule, visitedRule, hoverRule)
     }
   }
 
@@ -59,6 +62,7 @@ object PUSH_BUTTON extends CustomComponentClass {
   }
 
   object URGENCY extends CustomAttributeName[UrgencyLevel]("urgency")
+  object LINKTO extends CustomAttributeName[String]("linkto")
 
   def render(parentNode : Node, component : CustomComponent) : Blueprint = {
     val cs = ConfigSheet()
@@ -69,8 +73,17 @@ object PUSH_BUTTON extends CustomComponentClass {
       "padding-left:"+padding+"px;padding-right:"+padding+"px;"+
       "padding-top:"+(fontStyle.paddingTop - urgency.border)+"px;"+
       "padding-bottom:"+(padding - urgency.border)+"px;"
-    BUTTON(component, STYLE -> style, CLASS -> urgency.cssClass)(
-      component.children : _*
-    )
+
+    component.attributes.get(LINKTO) match {
+      case None =>
+        BUTTON(component, STYLE -> style, CLASS -> urgency.cssClass)(
+          component.children : _*
+        )      
+      case Some(location) =>
+        val linkstyle = "vertical-align:middle;text-align:center;" + fontStyle
+        LINK(component, CLASS -> urgency.cssClass, HREF -> location)(
+          DIV(STYLE->linkstyle)(component.children : _*)
+        )      
+    }  
   }
 }

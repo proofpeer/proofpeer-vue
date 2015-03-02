@@ -60,6 +60,7 @@ package object dom {
   val SPAN = primitiveClass("span")
   val IMG = primitiveClass("img")
   val BUTTON = primitiveClass("button")
+  val LINK = primitiveClass("a")
 
   // Attributes
 
@@ -67,6 +68,7 @@ package object dom {
   case object VALUE extends StringAttributeName("value")
   case object PLACEHOLDER extends StringAttributeName("placeholder")
   case object REF extends StringAttributeName("ref")
+  case object HREF extends StringAttributeName("href")
   case object TYPE extends StringAttributeName("type")
   case object SRC extends StringAttributeName("src")
   case object ROWS extends IntAttributeName("rows")
