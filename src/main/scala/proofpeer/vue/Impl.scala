@@ -373,7 +373,9 @@ object Impl {
           case Event.OnMouseLeave => "mouseleave"   
           case Event.OnKeyPress => "keypress"
           case Event.OnKeyDown => "keydown"
-          case Event.OnKeyUp => "keyup"               
+          case Event.OnKeyUp => "keyup"  
+          case Event.OnDragOver => "dragover"
+          case Event.OnDrop => "drop"             
           case _ => return None
         })
     }
@@ -531,11 +533,15 @@ object Impl {
             new SyntheticEvent(Event.OnKeyPress, keyPressInfo(nativeEvent), nativeEvent)
           case "keyup" =>
             new SyntheticEvent(Event.OnKeyUp, keyChangeInfo(nativeEvent), nativeEvent)
-          case _ => return None  
+          case "drop" => 
+            new SyntheticEvent(Event.OnDrop, null, nativeEvent)
+          case "dragover" => 
+            new SyntheticEvent(Event.OnDragOver, null, nativeEvent)
+          case _ => return None
         })
     }
 
-    class SyntheticEvent(val eventName : Event.Name, val info : Any, nativeEvent : js.Dynamic, val isExact : Boolean = false) extends Event 
+    class SyntheticEvent(val eventName : Event.Name, val info : Any, val nativeEvent : js.Dynamic, val isExact : Boolean = false) extends Event 
     {
       var cancelled : Boolean = nativeEvent.defaultPrevented.asInstanceOf[Boolean]
 

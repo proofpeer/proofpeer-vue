@@ -70,6 +70,8 @@ package object dom {
   case object REF extends StringAttributeName("ref")
   case object HREF extends StringAttributeName("href")
   case object TYPE extends StringAttributeName("type")
+  case object NAME extends StringAttributeName("name")
+  case object MULTIPLE extends StringAttributeName("multiple")
   case object SRC extends StringAttributeName("src")
   case object ROWS extends IntAttributeName("rows")
   case object SPELLCHECK extends BoolAttributeName("spellcheck")

@@ -1,10 +1,13 @@
 package proofpeer.vue
 
+import scala.scalajs.js
+
 trait Event {
   def eventName : Event.Name
   def info : Any
   def preventDefault()
   def stopPropagation()
+  def nativeEvent : js.Dynamic
   def cancel() {
     preventDefault()
     stopPropagation()
@@ -46,6 +49,8 @@ object Event {
   case object OnKeyDown extends Name("KeyDown") 
   case object OnKeyUp extends Name("KeyUp")
   case object OnKeyPress extends Name("KeyPress")
+  case object OnDragOver extends Name("DragOver")
+  case object OnDrop extends Name("Drop")
 
   trait KeyInfo {
     def key : String
