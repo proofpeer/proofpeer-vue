@@ -92,6 +92,10 @@ object FontStyle {
     isInitialized(cs.menubarSelectedStyle) &&
     isInitialized(cs.menubarNormalStyle)
   }  
+
+  def isInitialized(fs1 : FontStyle, fs2 : FontStyle, fss : FontStyle*) : Boolean = {
+    isInitialized(fs1) && isInitialized(fs2) && fss.forall(isInitialized _)
+  }
 }
 
 object FONT_STYLE extends CustomAttributeName[FontStyle]("fontstyle")
